@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.wdf.sap.corp/I061150/aker/api"
 	"github.wdf.sap.corp/I061150/aker/config"
@@ -29,6 +30,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	if err = http.ListenAndServe(addr, nil); err != nil {
 		fmt.Printf("HTTP Listener failed with '%s'.\n", err)
+		os.Exit(1)
 	}
 }
 
@@ -45,12 +47,11 @@ func buildFilters(filterConfigs []config.FilterConfig) ([]api.Plugin, error) {
 }
 
 func buildFilterWithConfig(cfg config.FilterConfig) (api.Plugin, error) {
-	fmt.Printf("Opening plugin %s\n", cfg.PluginName)
+	fmt.Printf("Loading plugin: %s\n", cfg.PluginName)
 	plug, err := plugin.Open(cfg.PluginName)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Configuring plugin...")
 	cfgData, err := json.Marshal(cfg.PluginConfig)
 	if err != nil {
 		return nil, err
@@ -58,6 +59,5 @@ func buildFilterWithConfig(cfg config.FilterConfig) (api.Plugin, error) {
 	if err := plug.Config(cfgData); err != nil {
 		return nil, err
 	}
-	fmt.Println("Done!")
 	return plug, nil
 }

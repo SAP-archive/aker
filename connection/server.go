@@ -1,6 +1,10 @@
 package connection
 
-import "github.wdf.sap.corp/I061150/aker/api"
+import (
+	"io"
+
+	"github.wdf.sap.corp/I061150/aker/api"
+)
 
 func ServePlugin(peer Peer, delegate api.Plugin) {
 	channel := peer.OpenChannel(0)
@@ -51,11 +55,13 @@ func (s *pluginServer) serveProcess() {
 		response := NewResponseClient(responseChannel)
 		dataChannel := s.peer.OpenChannel(input.DataChannelId)
 		data := NewDataClient(dataChannel)
-		s.delegate.Process(api.Context{
+
+		output.Done = s.delegate.Process(api.Context{
 			Request:  request,
 			Response: response,
 			Data:     data,
 		})
+
 		s.processStream.Push(&output)
 		s.peer.CloseChannel(requestChannel)
 		s.peer.CloseChannel(responseChannel)
@@ -65,30 +71,39 @@ func (s *pluginServer) serveProcess() {
 
 func ServeRequest(channel Channel, delegate api.Request) {
 	server := &requestServer{
-		delegate:     delegate,
-		channel:      channel,
-		urlStream:    channel.GetStream("url"),
-		methodStream: channel.GetStream("method"),
-		headerStream: channel.GetStream("header"),
-		readStream:   channel.GetStream("read"),
-		closeStream:  channel.GetStream("close"),
+		delegate:            delegate,
+		channel:             channel,
+		urlStream:           channel.GetStream("url"),
+		methodStream:        channel.GetStream("method"),
+		hostStream:          channel.GetStream("host"),
+		contentLengthStream: channel.GetStream("contentlength"),
+		headersStream:       channel.GetStream("headers"),
+		headerStream:        channel.GetStream("header"),
+		readStream:          channel.GetStream("read"),
+		closeStream:         channel.GetStream("close"),
 	}
 	server.listenAndServe()
 }
 
 type requestServer struct {
-	delegate     api.Request
-	channel      Channel
-	urlStream    Stream
-	methodStream Stream
-	headerStream Stream
-	readStream   Stream
-	closeStream  Stream
+	delegate            api.Request
+	channel             Channel
+	urlStream           Stream
+	hostStream          Stream
+	contentLengthStream Stream
+	methodStream        Stream
+	headersStream       Stream
+	headerStream        Stream
+	readStream          Stream
+	closeStream         Stream
 }
 
 func (s *requestServer) listenAndServe() {
 	go s.serveURL()
 	go s.serveMethod()
+	go s.serveHost()
+	go s.serveContentLength()
+	go s.serveHeaders()
 	go s.serveHeader()
 	go s.serveRead()
 	go s.serveClose()
@@ -112,6 +127,33 @@ func (s *requestServer) serveMethod() {
 	}
 }
 
+func (s *requestServer) serveHost() {
+	var input requestHostInput
+	var output requestHostOutput
+	for s.hostStream.Pop(&input) {
+		output.Host = s.delegate.Host()
+		s.hostStream.Push(&output)
+	}
+}
+
+func (s *requestServer) serveContentLength() {
+	var input requestContentLengthInput
+	var output requestContentLengthOutput
+	for s.contentLengthStream.Pop(&input) {
+		output.ContentLength = s.delegate.ContentLength()
+		s.contentLengthStream.Push(&output)
+	}
+}
+
+func (s *requestServer) serveHeaders() {
+	var input requestHeadersInput
+	var output requestHeadersOutput
+	for s.headersStream.Pop(&input) {
+		output.Headers = s.delegate.Headers()
+		s.headersStream.Push(&output)
+	}
+}
+
 func (s *requestServer) serveHeader() {
 	var input requestHeaderInput
 	var output requestHeaderOutput
@@ -129,7 +171,13 @@ func (s *requestServer) serveRead() {
 		count, err := s.delegate.Read(data)
 		output.Content = data[:count]
 		if err != nil {
-			output.Error = err.Error()
+			if err == io.EOF {
+				output.Error = ""
+				output.EOF = true
+			} else {
+				output.Error = err.Error()
+				output.EOF = false
+			}
 		} else {
 			output.Error = ""
 		}

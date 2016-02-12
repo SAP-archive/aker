@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"io"
 	"net/url"
 
 	"github.wdf.sap.corp/I061150/aker/api"
@@ -69,27 +70,33 @@ func (p *pluginClient) Process(context api.Context) bool {
 	p.peer.CloseChannel(requestChannel)
 	p.peer.CloseChannel(responseChannel)
 	p.peer.CloseChannel(dataChannel)
-	return false
+	return input.Done
 }
 
 func NewRequestClient(channel Channel) api.Request {
 	return &requestClient{
-		channel:      channel,
-		urlStream:    channel.GetStream("url"),
-		methodStream: channel.GetStream("method"),
-		headerStream: channel.GetStream("header"),
-		readStream:   channel.GetStream("read"),
-		closeStream:  channel.GetStream("close"),
+		channel:             channel,
+		urlStream:           channel.GetStream("url"),
+		methodStream:        channel.GetStream("method"),
+		hostStream:          channel.GetStream("host"),
+		contentLengthStream: channel.GetStream("contentlength"),
+		headersStream:       channel.GetStream("headers"),
+		headerStream:        channel.GetStream("header"),
+		readStream:          channel.GetStream("read"),
+		closeStream:         channel.GetStream("close"),
 	}
 }
 
 type requestClient struct {
-	channel      Channel
-	urlStream    Stream
-	methodStream Stream
-	headerStream Stream
-	readStream   Stream
-	closeStream  Stream
+	channel             Channel
+	urlStream           Stream
+	methodStream        Stream
+	hostStream          Stream
+	contentLengthStream Stream
+	headersStream       Stream
+	headerStream        Stream
+	readStream          Stream
+	closeStream         Stream
 }
 
 func (c *requestClient) URL() *url.URL {
@@ -118,6 +125,39 @@ func (c *requestClient) Method() string {
 	return input.Method
 }
 
+func (c *requestClient) Host() string {
+	output := requestHostInput{}
+	c.hostStream.Push(&output)
+
+	input := requestHostOutput{}
+	if ok := c.hostStream.Pop(&output); !ok {
+		panic("Channel is closed!")
+	}
+	return input.Host
+}
+
+func (c *requestClient) ContentLength() int {
+	output := requestContentLengthInput{}
+	c.contentLengthStream.Push(&output)
+
+	input := requestContentLengthOutput{}
+	if ok := c.contentLengthStream.Pop(&input); !ok {
+		panic("Channel is closed!")
+	}
+	return input.ContentLength
+}
+
+func (c *requestClient) Headers() map[string][]string {
+	output := requestHeadersInput{}
+	c.headersStream.Push(&output)
+
+	input := requestHeadersOutput{}
+	if ok := c.headersStream.Pop(&input); !ok {
+		panic("Channel is closed!")
+	}
+	return input.Headers
+}
+
 func (c *requestClient) Header(name string) string {
 	output := requestHeaderInput{
 		Name: name,
@@ -144,6 +184,9 @@ func (c *requestClient) Read(data []byte) (int, error) {
 	count := copy(data, input.Content)
 	if count < len(input.Content) {
 		panic("Message will drop content.")
+	}
+	if input.EOF {
+		return len(input.Content), io.EOF
 	}
 	if input.Error != "" {
 		return len(input.Content), errors.New(input.Error)

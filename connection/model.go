@@ -15,6 +15,7 @@ type pluginProcessInput struct {
 }
 
 type pluginProcessOutput struct {
+	Done bool `json:"done"`
 }
 
 type requestURLInput struct {
@@ -31,6 +32,27 @@ type requestMethodOutput struct {
 	Method string `json:"method"`
 }
 
+type requestHostInput struct {
+}
+
+type requestHostOutput struct {
+	Host string `json:"host"`
+}
+
+type requestContentLengthInput struct {
+}
+
+type requestContentLengthOutput struct {
+	ContentLength int `json:"content_length"`
+}
+
+type requestHeadersInput struct {
+}
+
+type requestHeadersOutput struct {
+	Headers map[string][]string `json:"headers"`
+}
+
 type requestHeaderInput struct {
 	Name string `json:"name"`
 }
@@ -45,6 +67,7 @@ type requestReadInput struct {
 
 type requestReadOutput struct {
 	Content []byte `json:"content"`
+	EOF     bool   `json:"eof"`
 	Error   string `json:"error"`
 }
 

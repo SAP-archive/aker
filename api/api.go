@@ -5,6 +5,9 @@ import "net/url"
 type Request interface {
 	URL() *url.URL
 	Method() string
+	Host() string
+	ContentLength() int
+	Headers() map[string][]string
 	Header(name string) string
 	Read([]byte) (int, error)
 	Close() error

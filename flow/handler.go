@@ -1,7 +1,6 @@
 package flow
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -33,15 +32,12 @@ func (h *chainedFilterHandler) ServeHTTP(response http.ResponseWriter, request *
 		Response: resp,
 		Data:     data,
 	}
-	fmt.Println("Running request through filters...")
-	for i, filter := range h.filters {
-		fmt.Printf("Running request through filter %d\n", i)
+	for _, filter := range h.filters {
 		done := filter.Process(context)
 		if done {
 			break
 		}
 	}
-	fmt.Println("Done!")
 }
 
 type requestWrapper struct {
@@ -54,6 +50,18 @@ func (w *requestWrapper) URL() *url.URL {
 
 func (w *requestWrapper) Method() string {
 	return w.original.Method
+}
+
+func (w *requestWrapper) Host() string {
+	return w.original.Host
+}
+
+func (w *requestWrapper) ContentLength() int {
+	return int(w.original.ContentLength) // FIXME: Dangerous conversion
+}
+
+func (w *requestWrapper) Headers() map[string][]string {
+	return w.original.Header
 }
 
 func (w *requestWrapper) Header(name string) string {
