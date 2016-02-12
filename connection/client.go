@@ -3,7 +3,6 @@ package connection
 import (
 	"errors"
 	"net/url"
-	"os"
 
 	"github.wdf.sap.corp/I061150/aker/api"
 )
@@ -26,18 +25,14 @@ type pluginClient struct {
 }
 
 func (p *pluginClient) Config(data []byte) error {
-	output := struct {
-		Content []byte `json:"content"`
-	}{
+	output := pluginConfigInput{
 		Content: data,
 	}
 	p.configStream.Push(&output)
 
-	input := struct {
-		Error string `json:"error"`
-	}{}
+	input := pluginConfigOutput{}
 	if ok := p.configStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel closed!")
 	}
 
 	if input.Error != "" {
@@ -59,19 +54,16 @@ func (p *pluginClient) Process(context api.Context) bool {
 	dataChannel := p.peer.OpenChannel(dataChannelId)
 	ServeData(dataChannel, context.Data)
 
-	output := struct {
-		RequestChannelId  int `json:"request_channel_id"`
-		ResponseChannelId int `json:"response_channel_id"`
-		DataChannelId     int `json:"data_channel_id"`
-	}{
+	output := pluginProcessInput{
 		RequestChannelId:  requestChannelId,
 		ResponseChannelId: responseChannelId,
 		DataChannelId:     dataChannelId,
 	}
 	p.processStream.Push(&output)
-	input := struct{}{}
+
+	input := pluginProcessOutput{}
 	if ok := p.processStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 
 	p.peer.CloseChannel(requestChannel)
@@ -101,14 +93,12 @@ type requestClient struct {
 }
 
 func (c *requestClient) URL() *url.URL {
-	output := struct{}{}
+	output := requestURLInput{}
 	c.urlStream.Push(&output)
 
-	input := struct {
-		URL string `json:"url"`
-	}{}
+	input := requestURLOutput{}
 	if ok := c.urlStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	url, err := url.Parse(input.URL)
 	if err != nil {
@@ -118,49 +108,38 @@ func (c *requestClient) URL() *url.URL {
 }
 
 func (c *requestClient) Method() string {
-	output := struct{}{}
+	output := requestMethodInput{}
 	c.methodStream.Push(&output)
 
-	input := struct {
-		Method string `json:"method"`
-	}{}
+	input := requestMethodOutput{}
 	if ok := c.methodStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	return input.Method
 }
 
 func (c *requestClient) Header(name string) string {
-	output := struct {
-		Name string `json:"name"`
-	}{
+	output := requestHeaderInput{
 		Name: name,
 	}
 	c.headerStream.Push(&output)
 
-	input := struct {
-		Value string `json:"value"`
-	}{}
+	input := requestHeaderOutput{}
 	if ok := c.headerStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	return input.Value
 }
 
 func (c *requestClient) Read(data []byte) (int, error) {
-	output := struct {
-		Length int `json:"length"`
-	}{
+	output := requestReadInput{
 		Length: len(data),
 	}
 	c.readStream.Push(&output)
 
-	input := struct {
-		Content []byte `json:"content"`
-		Error   string `json:"error"`
-	}{}
+	input := requestReadOutput{}
 	if ok := c.readStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	count := copy(data, input.Content)
 	if count < len(input.Content) {
@@ -173,14 +152,12 @@ func (c *requestClient) Read(data []byte) (int, error) {
 }
 
 func (c *requestClient) Close() error {
-	output := struct{}{}
+	output := requestCloseInput{}
 	c.closeStream.Push(&output)
 
-	input := struct {
-		Error string `json:"error"`
-	}{}
+	input := requestCloseOutput{}
 	if ok := c.closeStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	if input.Error != "" {
 		return errors.New(input.Error)
@@ -205,39 +182,39 @@ type responseClient struct {
 }
 
 func (c *responseClient) SetHeader(name string, values []string) {
-	output := struct {
-		Name   string   `json:"name"`
-		Values []string `json:"values"`
-	}{
+	output := responseSetHeaderInput{
 		Name:   name,
 		Values: values,
 	}
 	c.setHeaderStream.Push(&output)
+
+	input := responseSetHeaderOutput{}
+	if ok := c.setHeaderStream.Pop(&input); !ok {
+		panic("Channel is closed!")
+	}
 }
 
 func (c *responseClient) WriteStatus(status int) {
-	output := struct {
-		Status int `json:"status"`
-	}{
+	output := responseWriteStatusInput{
 		Status: status,
 	}
 	c.writeStatusStream.Push(&output)
+
+	input := responseWriteStatusOutput{}
+	if ok := c.writeStatusStream.Pop(&input); !ok {
+		panic("Channel is closed!")
+	}
 }
 
 func (c *responseClient) Write(data []byte) (int, error) {
-	output := struct {
-		Content []byte `json:"content"`
-	}{
+	output := responseWriteInput{
 		Content: data,
 	}
 	c.writeStream.Push(&output)
 
-	input := struct {
-		Count int    `json:"count"`
-		Error string `json:"error"`
-	}{}
+	input := responseWriteOutput{}
 	if ok := c.writeStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	if input.Error != "" {
 		return input.Count, errors.New(input.Error)
@@ -260,29 +237,27 @@ type dataClient struct {
 }
 
 func (w *dataClient) SetString(name, value string) {
-	output := struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	}{
+	output := dataSetStringInput{
 		Name:  name,
 		Value: value,
 	}
 	w.setStringStream.Push(&output)
+
+	input := dataSetStringOutput{}
+	if ok := w.setStringStream.Pop(&input); !ok {
+		panic("Channel is closed!")
+	}
 }
 
 func (w *dataClient) String(name string) string {
-	output := struct {
-		Name string `json:"name"`
-	}{
+	output := dataStringInput{
 		Name: name,
 	}
 	w.stringStream.Push(&output)
 
-	input := struct {
-		Value string `json:"value"`
-	}{}
+	input := dataStringOutput{}
 	if ok := w.stringStream.Pop(&input); !ok {
-		os.Exit(1)
+		panic("Channel is closed!")
 	}
 	return input.Value
 }

@@ -28,12 +28,8 @@ func (s *pluginServer) listenAndServe() {
 }
 
 func (s *pluginServer) serveConfig() {
-	var input struct {
-		Content []byte `json:"content"`
-	}
-	var output struct {
-		Error string `json:"error"`
-	}
+	var input pluginConfigInput
+	var output pluginConfigOutput
 	for s.configStream.Pop(&input) {
 		err := s.delegate.Config(input.Content)
 		if err != nil {
@@ -46,12 +42,8 @@ func (s *pluginServer) serveConfig() {
 }
 
 func (s *pluginServer) serveProcess() {
-	var input struct {
-		RequestChannelId  int `json:"request_channel_id"`
-		ResponseChannelId int `json:"response_channel_id"`
-		DataChannelId     int `json:"data_channel_id"`
-	}
-	var output struct{}
+	var input pluginProcessInput
+	var output pluginProcessOutput
 	for s.processStream.Pop(&input) {
 		requestChannel := s.peer.OpenChannel(input.RequestChannelId)
 		request := NewRequestClient(requestChannel)
@@ -103,10 +95,8 @@ func (s *requestServer) listenAndServe() {
 }
 
 func (s *requestServer) serveURL() {
-	var input struct{}
-	var output struct {
-		URL string `json:"url"`
-	}
+	var input requestURLInput
+	var output requestURLOutput
 	for s.urlStream.Pop(&input) {
 		output.URL = s.delegate.URL().String()
 		s.urlStream.Push(&output)
@@ -114,10 +104,8 @@ func (s *requestServer) serveURL() {
 }
 
 func (s *requestServer) serveMethod() {
-	var input struct{}
-	var output struct {
-		Method string `json:"method"`
-	}
+	var input requestMethodInput
+	var output requestMethodOutput
 	for s.methodStream.Pop(&input) {
 		output.Method = s.delegate.Method()
 		s.methodStream.Push(&output)
@@ -125,12 +113,8 @@ func (s *requestServer) serveMethod() {
 }
 
 func (s *requestServer) serveHeader() {
-	var input struct {
-		Name string `json:"name"`
-	}
-	var output struct {
-		Value string `json:"value"`
-	}
+	var input requestHeaderInput
+	var output requestHeaderOutput
 	for s.headerStream.Pop(&input) {
 		output.Value = s.delegate.Header(input.Name)
 		s.headerStream.Push(&output)
@@ -138,13 +122,8 @@ func (s *requestServer) serveHeader() {
 }
 
 func (s *requestServer) serveRead() {
-	var input struct {
-		Length int `json:"length"`
-	}
-	var output struct {
-		Content []byte `json:"content"`
-		Error   string `json:"error"`
-	}
+	var input requestReadInput
+	var output requestReadOutput
 	for s.readStream.Pop(&input) {
 		data := make([]byte, input.Length)
 		count, err := s.delegate.Read(data)
@@ -159,10 +138,8 @@ func (s *requestServer) serveRead() {
 }
 
 func (s *requestServer) serveClose() {
-	var input struct{}
-	var output struct {
-		Error string `json:"error"`
-	}
+	var input requestCloseInput
+	var output requestCloseOutput
 	for s.closeStream.Pop(&input) {
 		err := s.delegate.Close()
 		if err != nil {
@@ -179,7 +156,7 @@ func ServeResponse(channel Channel, delegate api.Response) {
 		delegate:          delegate,
 		channel:           channel,
 		setHeaderStream:   channel.GetStream("setheader"),
-		writeStatusStream: channel.GetStream("writeStatus"),
+		writeStatusStream: channel.GetStream("writestatus"),
 		writeStream:       channel.GetStream("write"),
 	}
 	server.listenAndServe()
@@ -200,35 +177,28 @@ func (s *responseServer) listenAndServe() {
 }
 
 func (s *responseServer) serveSetHeader() {
-	var input struct {
-		Name   string   `json:"name"`
-		Values []string `json:"values"`
-	}
+	var input responseSetHeaderInput
+	var output responseSetHeaderOutput
 	for s.setHeaderStream.Pop(&input) {
 		s.delegate.SetHeader(input.Name, input.Values)
+		s.setHeaderStream.Push(&output)
 	}
 }
 
 func (s *responseServer) serveWriteStatus() {
-	var input struct {
-		Status int `json:"status"`
-	}
+	var input responseWriteStatusInput
+	var output responseWriteStatusOutput
 	for s.writeStatusStream.Pop(&input) {
 		s.delegate.WriteStatus(input.Status)
+		s.writeStatusStream.Push(&output)
 	}
 }
 
 func (s *responseServer) serveWrite() {
-	var input struct {
-		Content []byte `json:"content"`
-	}
-	var output struct {
-		Count int    `json:"count"`
-		Error string `json:"error"`
-	}
+	var input responseWriteInput
+	var output responseWriteOutput
 	for s.writeStream.Pop(&input) {
 		count, err := s.delegate.Write(input.Content)
-
 		output.Count = count
 		if err != nil {
 			output.Error = err.Error()
@@ -262,22 +232,17 @@ func (s *dataServer) listenAndServe() {
 }
 
 func (s *dataServer) serveSetString() {
-	var input struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
-	}
+	var input dataSetStringInput
+	var output dataSetStringOutput
 	for s.setStringStream.Pop(&input) {
 		s.delegate.SetString(input.Name, input.Value)
+		s.setStringStream.Push(&output)
 	}
 }
 
 func (s *dataServer) serveString() {
-	var input struct {
-		Name string `json:"name"`
-	}
-	var output struct {
-		Value string `json:"value"`
-	}
+	var input dataStringInput
+	var output dataStringOutput
 	for s.stringStream.Pop(&input) {
 		output.Value = s.delegate.String(input.Name)
 		s.stringStream.Push(&output)
