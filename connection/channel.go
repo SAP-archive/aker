@@ -62,8 +62,8 @@ func (p *peer) GetFreeChannelId() int {
 func (p *peer) OpenChannel(id int) Channel {
 	ch := &channel{
 		id:      id,
-		input:   make(chan channelMessage),
-		output:  make(chan channelMessage),
+		input:   make(chan channelMessage, 1000),
+		output:  make(chan channelMessage, 1000),
 		streams: make(map[string]*stream),
 	}
 	p.channelsMutex.Lock()
@@ -99,7 +99,6 @@ func (p *peer) streamPeerInboundMessages() {
 		p.channelsMutex.Lock()
 		ch, ok := p.channels[msg.ChannelId]
 		p.channelsMutex.Unlock()
-		// FIXME: This will happen!
 		if !ok {
 			panic(fmt.Sprintf("Trying to write to missing channel '%d'", msg.ChannelId))
 		}
