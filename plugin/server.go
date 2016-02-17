@@ -1,7 +1,12 @@
 package plugin
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.wdf.sap.corp/I061150/aker/api"
 	"github.wdf.sap.corp/I061150/aker/connection"
@@ -9,22 +14,40 @@ import (
 
 type PluginFactory func() (api.Plugin, error)
 
-func ListenAndServe(name string, factory PluginFactory) error {
-	listener, err := net.Listen("unix", sockPath(name))
+func ListenAndServe(factory PluginFactory) error {
+	socketPath, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Socket path: %s\n", string(socketPath))
+
+	listener, err := net.Listen("unix", string(socketPath))
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
 
+	go handlePluginConnections(listener, factory)
+
+	osChannel := make(chan os.Signal)
+	signal.Notify(osChannel, syscall.SIGTERM, syscall.SIGINT)
+	for range osChannel {
+		return nil
+	}
+	return nil
+}
+
+func handlePluginConnections(listener net.Listener, factory PluginFactory) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		plugin, err := factory()
 		if err != nil {
-			return err
+			panic(err)
 		}
 
 		go func(conn net.Conn, plug api.Plugin) {
