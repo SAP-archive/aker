@@ -19,7 +19,6 @@ func ListenAndServe(factory PluginFactory) error {
 	if err != nil {
 		return err
 	}
-
 	fmt.Printf("Socket path: %s\n", string(socketPath))
 
 	listener, err := net.Listen("unix", string(socketPath))
