@@ -18,6 +18,16 @@ func main() {
 		panic(err)
 	}
 
+	pluginNames := uniquePluginNames(cfg)
+	for _, pluginName := range pluginNames {
+		fmt.Printf("Starting plugin '%s'...\n", pluginName)
+		if err := plugin.Start(pluginName); err != nil {
+			fmt.Printf("Failed to start plugin '%s' due to '%s'!\n", pluginName, err)
+			os.Exit(1)
+		}
+		fmt.Printf("Plugin '%s' started successfully.\n", pluginName)
+	}
+
 	for _, handler := range cfg.Handlers {
 		filters, err := buildFilters(handler.Filters)
 		if err != nil {
@@ -34,6 +44,22 @@ func main() {
 	}
 }
 
+func uniquePluginNames(cfg config.Config) []string {
+	names := map[string]struct{}{}
+	for _, handler := range cfg.Handlers {
+		for _, filter := range handler.Filters {
+			names[filter.PluginName] = struct{}{}
+		}
+	}
+	index := 0
+	result := make([]string, len(names))
+	for name := range names {
+		result[index] = name
+		index++
+	}
+	return result
+}
+
 func buildFilters(filterConfigs []config.FilterConfig) ([]api.Plugin, error) {
 	result := []api.Plugin{}
 	for _, fltrConfig := range filterConfigs {
@@ -47,8 +73,8 @@ func buildFilters(filterConfigs []config.FilterConfig) ([]api.Plugin, error) {
 }
 
 func buildFilterWithConfig(cfg config.FilterConfig) (api.Plugin, error) {
-	fmt.Printf("Loading plugin: %s\n", cfg.PluginName)
-	plug, err := plugin.Open(cfg.PluginName)
+	fmt.Printf("Connecting to plugin: %s\n", cfg.PluginName)
+	plug, err := plugin.Connect(cfg.PluginName)
 	if err != nil {
 		return nil, err
 	}
