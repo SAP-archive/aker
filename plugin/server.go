@@ -1,57 +1,70 @@
 package plugin
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net"
+	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
-	"github.wdf.sap.corp/I061150/aker/api"
-	"github.wdf.sap.corp/I061150/aker/connection"
+	"github.wdf.sap.corp/I061150/aker/socket"
 )
 
-type PluginFactory func() (api.Plugin, error)
+type HandlerFactory func(config []byte) (http.Handler, error)
 
-func ListenAndServe(factory PluginFactory) error {
-	socketPath, err := ioutil.ReadAll(os.Stdin)
+func ListenAndServe(factory HandlerFactory) error {
+	var setup pluginSetup
+	decoder := json.NewDecoder(os.Stdin)
+	if err := decoder.Decode(&setup); err != nil {
+		return err
+	}
+
+	handler, err := factory(setup.Configuration)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Socket path: %s\n", string(socketPath))
-
-	listener, err := net.Listen("unix", string(socketPath))
-	if err != nil {
-		return err
+	if setup.ForwardSocketPath != "" {
+		handler = newForwardHandler(handler, setup.ForwardSocketPath)
 	}
-	defer listener.Close()
 
-	go handlePluginConnections(listener, factory)
-
-	osChannel := make(chan os.Signal)
-	signal.Notify(osChannel, syscall.SIGTERM, syscall.SIGINT)
-	for range osChannel {
-		return nil
-	}
-	return nil
+	fmt.Printf("Listening on socket: %s\n", setup.SocketPath)
+	return socket.ListenAndServe(setup.SocketPath, handler)
 }
 
-func handlePluginConnections(listener net.Listener, factory PluginFactory) {
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			panic(err)
-		}
+type responseWrapper struct {
+	http.ResponseWriter
+	done bool
+}
 
-		plugin, err := factory()
-		if err != nil {
-			panic(err)
-		}
+func (w *responseWrapper) Write(data []byte) (int, error) {
+	w.done = true
+	return w.ResponseWriter.Write(data)
+}
 
-		go func(conn net.Conn, plug api.Plugin) {
-			peer := connection.NewPeer(conn, conn, 1)
-			connection.ServePlugin(peer, plug)
-		}(conn, plugin)
+func (w *responseWrapper) WriteHeader(status int) {
+	w.done = true
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func newForwardHandler(current http.Handler, nextSocket string) http.Handler {
+	return &forwardHandler{
+		current: current,
+		next:    socket.Proxy(nextSocket),
 	}
+}
+
+type forwardHandler struct {
+	current http.Handler
+	next    http.Handler
+}
+
+func (h *forwardHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	respWrapper := &responseWrapper{
+		ResponseWriter: resp,
+		done:           false,
+	}
+	h.current.ServeHTTP(respWrapper, req)
+	if respWrapper.done {
+		return
+	}
+	h.next.ServeHTTP(resp, req)
 }

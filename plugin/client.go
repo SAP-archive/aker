@@ -1,49 +1,61 @@
 package plugin
 
 import (
-	"net"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
-	"strings"
-	"time"
 
-	"github.wdf.sap.corp/I061150/aker/api"
-	"github.wdf.sap.corp/I061150/aker/connection"
+	"github.wdf.sap.corp/I061150/aker/socket"
 )
 
-const connectAttempts = 5
-const connectAttemptInterval = time.Second
+type Plugin struct {
+	http.Handler
+	socketPath string
+}
 
-// Start starts the plugin with the specified
-// name as a new process and prepares it for listening
-func Start(name string) error {
+func (p *Plugin) SocketPath() string {
+	if p == nil {
+		return ""
+	}
+	return p.socketPath
+}
+
+func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
+	socketPath := getUniqueSocketPath(name)
+
+	setup, err := json.Marshal(&pluginSetup{
+		SocketPath:        socketPath,
+		ForwardSocketPath: next.SocketPath(),
+		Configuration:     config,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	cmd := exec.Command(name)
-	cmd.Stdin = strings.NewReader(sockPath(name))
+	cmd.Stdin = bytes.NewReader(setup)
 	cmd.Stdout = newPluginLogWriter(name, "INFO", os.Stdout)
 	cmd.Stderr = newPluginLogWriter(name, "ERROR", os.Stderr)
 	if err := cmd.Start(); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &Plugin{
+		socketPath: socketPath,
+		Handler:    socket.Proxy(socketPath),
+	}, nil
 }
 
-// Connect tries to open a connection to the plugin with
-// the specified name.
-// It is important that the plugin was started with Start
-// beforehand.
-func Connect(name string) (api.Plugin, error) {
-	var err error
-	var conn net.Conn
-	for attempts := 1; attempts <= connectAttempts; attempts++ {
-		conn, err = net.Dial("unix", sockPath(name))
-		if err == nil {
-			const maxInt = int(^uint(0) >> 1)
-			peer := connection.NewPeer(conn, conn, maxInt/2)
-			return connection.NewPluginClient(peer), nil
-		}
-		if attempts < connectAttempts {
-			time.Sleep(connectAttemptInterval)
-		}
+func getUniqueSocketPath(name string) string {
+	prefix := fmt.Sprintf("aker-%s-plugin", name)
+
+	tmpFile, err := ioutil.TempFile("", prefix)
+	if err != nil {
+		panic(err)
 	}
-	return nil, err
+	defer os.Remove(tmpFile.Name())
+	return tmpFile.Name()
 }
