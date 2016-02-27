@@ -1,7 +1,7 @@
 package plugin
 
-import "fmt"
-
-func sockPath(name string) string {
-	return fmt.Sprintf("/tmp/%s-plugin.sock", name)
+type pluginSetup struct {
+	SocketPath        string `json:"socket_path"`
+	ForwardSocketPath string `json:"forward_socket_path"`
+	Configuration     []byte `json:"configuration"`
 }
