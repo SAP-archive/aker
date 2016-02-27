@@ -7,10 +7,9 @@ import (
 	"io"
 )
 
-func newPluginLogWriter(name, level string, out io.Writer) io.Writer {
+func newPluginLogWriter(name string, out io.Writer) io.Writer {
 	return &pluginLogWriter{
 		name:     name,
-		level:    level,
 		delegate: out,
 		buffer:   new(bytes.Buffer),
 	}
@@ -18,7 +17,6 @@ func newPluginLogWriter(name, level string, out io.Writer) io.Writer {
 
 type pluginLogWriter struct {
 	name     string
-	level    string
 	delegate io.Writer
 	buffer   *bytes.Buffer
 }
@@ -30,7 +28,7 @@ func (p *pluginLogWriter) Write(data []byte) (int, error) {
 		if err := scanner.Err(); err != nil {
 			return len(data), err
 		}
-		_, err := fmt.Fprintf(p.delegate, "[%s] %s: %s\n", p.name, p.level, scanner.Text())
+		_, err := fmt.Fprintf(p.delegate, "[%s]: %s\n", p.name, scanner.Text())
 		if err != nil {
 			return len(data), err
 		}

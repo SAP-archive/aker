@@ -38,8 +38,8 @@ func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 
 	cmd := exec.Command(name)
 	cmd.Stdin = bytes.NewReader(setup)
-	cmd.Stdout = newPluginLogWriter(name, "INFO", os.Stdout)
-	cmd.Stderr = newPluginLogWriter(name, "ERROR", os.Stderr)
+	cmd.Stdout = newPluginLogWriter(name, os.Stdout)
+	cmd.Stderr = newPluginLogWriter(name, os.Stderr)
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
