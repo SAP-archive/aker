@@ -3,7 +3,6 @@ package plugin
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -25,7 +24,7 @@ func (p *Plugin) SocketPath() string {
 }
 
 func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
-	socketPath := getUniqueSocketPath(name)
+	socketPath := getUniqueSocketPath()
 
 	setup, err := json.Marshal(&pluginSetup{
 		SocketPath:        socketPath,
@@ -49,10 +48,8 @@ func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 	}, nil
 }
 
-func getUniqueSocketPath(name string) string {
-	prefix := fmt.Sprintf("aker-%s-plugin", name)
-
-	tmpFile, err := ioutil.TempFile("", prefix)
+func getUniqueSocketPath() string {
+	tmpFile, err := ioutil.TempFile("", "aker-plugin")
 	if err != nil {
 		panic(err)
 	}
