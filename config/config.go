@@ -1,29 +1,30 @@
 package config
 
 import (
-	"encoding/json"
 	"io"
 	"os"
+
+	"github.com/cloudfoundry-incubator/candiedyaml"
 )
 
 type Config struct {
-	Server   ServerConfig    `json:"server"`
-	Handlers []HandlerConfig `json:"handlers"`
+	Server    ServerConfig     `yaml:"server"`
+	Endpoints []EndpointConfig `yaml:"endpoints"`
 }
 
 type ServerConfig struct {
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
-type HandlerConfig struct {
-	Path    string         `json:"path"`
-	Filters []FilterConfig `json:"filters"`
+type EndpointConfig struct {
+	Path    string                  `yaml:"path"`
+	Plugins []PluginReferenceConfig `yaml:"plugins"`
 }
 
-type FilterConfig struct {
-	PluginName   string       `json:"plugin_name"`
-	PluginConfig PluginConfig `json:"plugin_config"`
+type PluginReferenceConfig struct {
+	Name   string       `yaml:"name"`
+	Config PluginConfig `yaml:"configuration"`
 }
 
 type PluginConfig map[string]interface{}
@@ -40,7 +41,7 @@ func LoadFromFile(name string) (Config, error) {
 
 func loadFromReader(reader io.Reader) (Config, error) {
 	config := Config{}
-	decoder := json.NewDecoder(reader)
+	decoder := candiedyaml.NewDecoder(reader)
 	if err := decoder.Decode(&config); err != nil {
 		return Config{}, err
 	}

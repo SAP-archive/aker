@@ -1,27 +1,28 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/cloudfoundry-incubator/candiedyaml"
 
 	"github.wdf.sap.corp/I061150/aker/config"
 	"github.wdf.sap.corp/I061150/aker/plugin"
 )
 
 func main() {
-	cfg, err := config.LoadFromFile("config.json")
+	cfg, err := config.LoadFromFile("config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	for _, handler := range cfg.Handlers {
-		firstFilter, err := buildPluginChain(handler.Filters)
+	for _, endpoint := range cfg.Endpoints {
+		leadingPlugin, err := buildPluginChain(endpoint.Plugins)
 		if err != nil {
 			panic(err)
 		}
-		http.Handle(handler.Path, firstFilter)
+		http.Handle(endpoint.Path, leadingPlugin)
 	}
 
 	fmt.Println("Starting HTTP listener...")
@@ -32,15 +33,15 @@ func main() {
 	}
 }
 
-func buildPluginChain(filterConfigs []config.FilterConfig) (http.Handler, error) {
-	index := len(filterConfigs) - 1
-	lastPlugin, err := buildPlugin(filterConfigs[index], nil)
+func buildPluginChain(references []config.PluginReferenceConfig) (http.Handler, error) {
+	index := len(references) - 1
+	lastPlugin, err := buildPlugin(references[index], nil)
 	if err != nil {
 		return nil, err
 	}
 	for index > 0 {
 		index--
-		lastPlugin, err = buildPlugin(filterConfigs[index], lastPlugin)
+		lastPlugin, err = buildPlugin(references[index], lastPlugin)
 		if err != nil {
 			return nil, err
 		}
@@ -48,14 +49,14 @@ func buildPluginChain(filterConfigs []config.FilterConfig) (http.Handler, error)
 	return lastPlugin, nil
 }
 
-func buildPlugin(cfg config.FilterConfig, next *plugin.Plugin) (*plugin.Plugin, error) {
-	cfgData, err := json.Marshal(cfg.PluginConfig)
+func buildPlugin(cfg config.PluginReferenceConfig, next *plugin.Plugin) (*plugin.Plugin, error) {
+	cfgData, err := candiedyaml.Marshal(cfg.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("Opening plugin: %s\n", cfg.PluginName)
-	plug, err := plugin.Open(cfg.PluginName, cfgData, next)
+	fmt.Printf("Opening plugin: %s\n", cfg.Name)
+	plug, err := plugin.Open(cfg.Name, cfgData, next)
 	if err != nil {
 		return nil, err
 	}
