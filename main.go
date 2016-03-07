@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -11,8 +12,16 @@ import (
 	"github.wdf.sap.corp/I061150/aker/plugin"
 )
 
+var configLocationFlag = flag.String(
+	"config",
+	"config.yml",
+	"Specifies the configuration file location. By default this is './config.yml'.",
+)
+
 func main() {
-	cfg, err := config.LoadFromFile("config.yaml")
+	flag.Parse()
+
+	cfg, err := config.LoadFromFile(*configLocationFlag)
 	if err != nil {
 		logging.Fatalf("Failed to load configuration due to '%s'", err.Error())
 	}
