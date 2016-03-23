@@ -26,5 +26,6 @@ func GetUniqueSocketPath(prefix string) (string, error) {
 		return "", err
 	}
 	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
 	return tmpFile.Name(), nil
 }
