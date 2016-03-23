@@ -18,7 +18,9 @@ var _ = Describe("Socket", func() {
 	var socketPath string
 
 	BeforeEach(func() {
-		socketPath = GetUniqueSocketPath("aker-test")
+		var err error
+		socketPath, err = GetUniqueSocketPath("aker-test")
+		Ω(err).ShouldNot(HaveOccurred())
 	})
 
 	AfterEach(func() {

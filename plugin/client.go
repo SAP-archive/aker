@@ -23,7 +23,10 @@ func (p *Plugin) SocketPath() string {
 }
 
 func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
-	socketPath := socket.GetUniqueSocketPath("aker-plugin")
+	socketPath, err := socket.GetUniqueSocketPath("aker-plugin")
+	if err != nil {
+		return nil, err
+	}
 
 	setup, err := json.Marshal(&setup{
 		SocketPath:        socketPath,
