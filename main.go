@@ -23,13 +23,13 @@ func main() {
 
 	cfg, err := config.LoadFromFile(*configLocationFlag)
 	if err != nil {
-		logging.Fatalf("Failed to load configuration due to '%s'", err.Error())
+		logging.Fatalf("Failed to load configuration due to %q", err.Error())
 	}
 
 	for _, endpoint := range cfg.Endpoints {
 		leadingPlugin, err := buildPluginChain(endpoint.Plugins)
 		if err != nil {
-			logging.Fatalf("Failed to build plugin chain due to '%s'", err.Error())
+			logging.Fatalf("Failed to build plugin chain due to %q", err.Error())
 		}
 		http.Handle(endpoint.Path, leadingPlugin)
 	}
@@ -37,7 +37,7 @@ func main() {
 	logging.Infof("Starting HTTP listener...")
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	if err = http.ListenAndServe(addr, nil); err != nil {
-		logging.Fatalf("HTTP Listener failed with '%s'", err.Error())
+		logging.Fatalf("HTTP Listener failed with %q", err.Error())
 	}
 }
 
@@ -63,7 +63,7 @@ func buildPlugin(cfg config.PluginReferenceConfig, next *plugin.Plugin) (*plugin
 		return nil, err
 	}
 
-	logging.Infof("Opening plugin: %s", cfg.Name)
+	logging.Infof("Opening plugin: %q", cfg.Name)
 	plug, err := plugin.Open(cfg.Name, cfgData, next)
 	if err != nil {
 		return nil, err
