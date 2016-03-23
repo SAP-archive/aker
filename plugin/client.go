@@ -25,7 +25,7 @@ func (p *Plugin) SocketPath() string {
 func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 	socketPath := socket.GetUniqueSocketPath("aker-plugin")
 
-	setup, err := json.Marshal(&pluginSetup{
+	setup, err := json.Marshal(&setup{
 		SocketPath:        socketPath,
 		ForwardSocketPath: next.SocketPath(),
 		Configuration:     config,
@@ -36,8 +36,8 @@ func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 
 	cmd := exec.Command(name)
 	cmd.Stdin = bytes.NewReader(setup)
-	cmd.Stdout = newPluginLogWriter(name, os.Stdout)
-	cmd.Stderr = newPluginLogWriter(name, os.Stderr)
+	cmd.Stdout = newLogWriter(name, os.Stdout)
+	cmd.Stderr = newLogWriter(name, os.Stderr)
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}

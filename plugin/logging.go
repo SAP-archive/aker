@@ -7,21 +7,21 @@ import (
 	"io"
 )
 
-func newPluginLogWriter(name string, out io.Writer) io.Writer {
-	return &pluginLogWriter{
+func newLogWriter(name string, out io.Writer) io.Writer {
+	return &logWriter{
 		name:     name,
 		delegate: out,
 		buffer:   new(bytes.Buffer),
 	}
 }
 
-type pluginLogWriter struct {
+type logWriter struct {
 	name     string
 	delegate io.Writer
 	buffer   *bytes.Buffer
 }
 
-func (p *pluginLogWriter) Write(data []byte) (int, error) {
+func (p *logWriter) Write(data []byte) (int, error) {
 	p.buffer.Write(data)
 	scanner := bufio.NewScanner(p.buffer)
 	for scanner.Scan() {

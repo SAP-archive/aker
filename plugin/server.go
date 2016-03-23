@@ -12,7 +12,7 @@ import (
 type HandlerFactory func(config []byte) (http.Handler, error)
 
 func ListenAndServe(factory HandlerFactory) error {
-	var setup pluginSetup
+	var setup setup
 	decoder := json.NewDecoder(os.Stdin)
 	if err := decoder.Decode(&setup); err != nil {
 		return err
