@@ -7,28 +7,28 @@ import (
 	"io"
 )
 
-func newLogWriter(name string, out io.Writer) io.Writer {
+func newLogWriter(name string, sink io.Writer) *logWriter {
 	return &logWriter{
-		name:     name,
-		delegate: out,
-		buffer:   new(bytes.Buffer),
+		name:   name,
+		sink:   sink,
+		buffer: new(bytes.Buffer),
 	}
 }
 
 type logWriter struct {
-	name     string
-	delegate io.Writer
-	buffer   *bytes.Buffer
+	name   string
+	sink   io.Writer
+	buffer *bytes.Buffer
 }
 
-func (p *logWriter) Write(data []byte) (int, error) {
-	p.buffer.Write(data)
-	scanner := bufio.NewScanner(p.buffer)
+func (w *logWriter) Write(data []byte) (int, error) {
+	w.buffer.Write(data)
+	scanner := bufio.NewScanner(w.buffer)
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
 			return len(data), err
 		}
-		_, err := fmt.Fprintf(p.delegate, "[%s]: %s\n", p.name, scanner.Text())
+		_, err := fmt.Fprintf(w.sink, "[%s]: %s\n", w.name, scanner.Text())
 		if err != nil {
 			return len(data), err
 		}
