@@ -2,10 +2,10 @@ package plugin
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
+	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/socket"
 )
 
@@ -26,7 +26,7 @@ func ListenAndServe(factory HandlerFactory) error {
 		handler = newForwardHandler(handler, setup.ForwardSocketPath)
 	}
 
-	fmt.Printf("Listening on socket: %s\n", setup.SocketPath)
+	logging.Infof("Listening on socket: %s\n", setup.SocketPath)
 	return socket.ListenAndServe(setup.SocketPath, handler)
 }
 
