@@ -1,0 +1,12 @@
+server:
+  host: localhost
+  port: 8080
+endpoints:
+  - path: "/"
+    plugins: []
+  - path: "/proxy"
+    audit: true
+    plugins:
+      - name: aker-proxy
+        configuration:
+          url: "http://location.com"
