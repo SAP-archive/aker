@@ -19,6 +19,7 @@ type ServerConfig struct {
 
 type EndpointConfig struct {
 	Path    string                  `yaml:"path"`
+	Audit   bool                    `yaml"audit"`
 	Plugins []PluginReferenceConfig `yaml:"plugins"`
 }
 

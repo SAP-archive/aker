@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/cloudfoundry-incubator/candiedyaml"
 
@@ -30,6 +31,9 @@ func main() {
 		leadingPlugin, err := buildPluginChain(endpoint.Plugins)
 		if err != nil {
 			logging.Fatalf("Failed to build plugin chain due to %q", err.Error())
+		}
+		if endpoint.Audit {
+			leadingPlugin = logging.LoggingHandler(os.Stdout, leadingPlugin)
 		}
 		http.Handle(endpoint.Path, leadingPlugin)
 	}
