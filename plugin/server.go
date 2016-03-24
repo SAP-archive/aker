@@ -30,17 +30,17 @@ func ListenAndServe(factory HandlerFactory) error {
 	return socket.ListenAndServe(setup.SocketPath, handler)
 }
 
-type responseWrapper struct {
+type responseTracker struct {
 	http.ResponseWriter
 	done bool
 }
 
-func (w *responseWrapper) Write(data []byte) (int, error) {
+func (w *responseTracker) Write(data []byte) (int, error) {
 	w.done = true
 	return w.ResponseWriter.Write(data)
 }
 
-func (w *responseWrapper) WriteHeader(status int) {
+func (w *responseTracker) WriteHeader(status int) {
 	w.done = true
 	w.ResponseWriter.WriteHeader(status)
 }
@@ -58,12 +58,12 @@ type forwardHandler struct {
 }
 
 func (h *forwardHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	respWrapper := &responseWrapper{
+	respTracker := &responseTracker{
 		ResponseWriter: resp,
 		done:           false,
 	}
-	h.current.ServeHTTP(respWrapper, req)
-	if respWrapper.done {
+	h.current.ServeHTTP(respTracker, req)
+	if respTracker.done {
 		return
 	}
 	h.next.ServeHTTP(resp, req)
