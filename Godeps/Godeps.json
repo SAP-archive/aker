@@ -21,6 +21,11 @@
 			"Rev": "2c2e9bb47b4e44067024f29339588cac8b34dd12"
 		},
 		{
+			"ImportPath": "github.com/onsi/ginkgo/extensions/table",
+			"Comment": "v1.2.0-52-g2c2e9bb",
+			"Rev": "2c2e9bb47b4e44067024f29339588cac8b34dd12"
+		},
+		{
 			"ImportPath": "github.com/onsi/ginkgo/internal/codelocation",
 			"Comment": "v1.2.0-52-g2c2e9bb",
 			"Rev": "2c2e9bb47b4e44067024f29339588cac8b34dd12"
