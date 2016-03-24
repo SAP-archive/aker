@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -14,7 +15,7 @@ type Logger interface {
 	Fatalf(message string, args ...interface{})
 }
 
-var DefaultLogger Logger = new(NativeLogger)
+var DefaultLogger Logger = NewNativeLogger(os.Stdout, os.Stderr)
 
 func Debugf(message string, args ...interface{}) {
 	DefaultLogger.Debugf(message, args...)
@@ -37,32 +38,48 @@ func Fatalf(message string, args ...interface{}) {
 }
 
 type NativeLogger struct {
+	stdoutLogger *log.Logger
+	stderrLogger *log.Logger
 }
 
-func (l NativeLogger) Debugf(message string, args ...interface{}) {
-	l.printLevel(os.Stdout, "DEBUG", message, args...)
+func NewNativeLogger(out, err io.Writer) *NativeLogger {
+	return &NativeLogger{
+		stdoutLogger: log.New(out, "", log.Flags()),
+		stderrLogger: log.New(err, "", log.Flags()),
+	}
 }
 
-func (l NativeLogger) Infof(message string, args ...interface{}) {
-	l.printLevel(os.Stdout, "INFO", message, args...)
+func (l *NativeLogger) Debugf(message string, args ...interface{}) {
+	l.printLevel("DEBUG", message, args...)
 }
 
-func (l NativeLogger) Warnf(message string, args ...interface{}) {
-	l.printLevel(os.Stdout, "WARN", message, args...)
+func (l *NativeLogger) Infof(message string, args ...interface{}) {
+	l.printLevel("INFO", message, args...)
 }
 
-func (l NativeLogger) Errorf(message string, args ...interface{}) {
-	l.printLevel(os.Stderr, "ERROR", message, args...)
+func (l *NativeLogger) Warnf(message string, args ...interface{}) {
+	l.printLevel("WARN", message, args...)
 }
 
-func (l NativeLogger) Fatalf(message string, args ...interface{}) {
-	l.printLevel(os.Stderr, "FATAL", message, args...)
+func (l *NativeLogger) Errorf(message string, args ...interface{}) {
+	l.printLevel("ERROR", message, args...)
+}
+
+func (l *NativeLogger) Fatalf(message string, args ...interface{}) {
+	l.printLevel("FATAL", message, args...)
 	os.Exit(1)
 }
 
-func (l NativeLogger) printLevel(out io.Writer, level, message string, args ...interface{}) {
-	line := fmt.Sprintf("[%s] %s\n", level, message)
-	fmt.Fprintf(out, line, args...)
+func (l *NativeLogger) printLevel(level, message string, args ...interface{}) {
+	line := fmt.Sprintf("[%s] %s", level, message)
+	var log *log.Logger
+	switch {
+	case level == "ERROR" || level == "FATAL":
+		log = l.stderrLogger
+	default:
+		log = l.stdoutLogger
+	}
+	log.Printf(line, args...)
 }
 
 type MutedLogger struct {
