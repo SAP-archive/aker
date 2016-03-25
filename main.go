@@ -11,6 +11,7 @@ import (
 	"github.infra.hana.ondemand.com/I061150/aker/config"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/I061150/aker/uuid"
 )
 
 var configLocationFlag = flag.String(
@@ -26,7 +27,7 @@ func main() {
 	if err != nil {
 		logging.Fatalf("Failed to load configuration due to %q", err.Error())
 	}
-
+	mux := http.NewServeMux()
 	for _, endpoint := range cfg.Endpoints {
 		leadingPlugin, err := buildPluginChain(endpoint.Plugins)
 		if err != nil {
@@ -35,14 +36,41 @@ func main() {
 		if endpoint.Audit {
 			leadingPlugin = logging.Handler(os.Stdout, leadingPlugin)
 		}
-		http.Handle(endpoint.Path, leadingPlugin)
+		mux.Handle(endpoint.Path, leadingPlugin)
 	}
 
 	logging.Infof("Starting HTTP listener...")
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-	if err = http.ListenAndServe(addr, nil); err != nil {
+
+	handler := NewHeaderSticker(mux, map[string]func() string{
+		"X-Aker-Request-Id": func() string {
+			uid, _ := uuid.Random()
+			return uid.String()
+		},
+	})
+
+	if err = http.ListenAndServe(addr, handler); err != nil {
 		logging.Fatalf("HTTP Listener failed with %q", err.Error())
 	}
+}
+
+type HeaderSticker struct {
+	http.Handler
+	headers map[string]func() string
+}
+
+func NewHeaderSticker(h http.Handler, headers map[string]func() string) *HeaderSticker {
+	return &HeaderSticker{
+		Handler: h,
+		headers: headers,
+	}
+}
+
+func (s *HeaderSticker) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	for header, valueFunc := range s.headers {
+		req.Header.Add(header, valueFunc())
+	}
+	s.Handler.ServeHTTP(w, req)
 }
 
 func buildPluginChain(references []config.PluginReferenceConfig) (http.Handler, error) {
