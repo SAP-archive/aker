@@ -33,7 +33,7 @@ func main() {
 			logging.Fatalf("Failed to build plugin chain due to %q", err.Error())
 		}
 		if endpoint.Audit {
-			leadingPlugin = logging.LoggingHandler(os.Stdout, leadingPlugin)
+			leadingPlugin = logging.Handler(os.Stdout, leadingPlugin)
 		}
 		http.Handle(endpoint.Path, leadingPlugin)
 	}

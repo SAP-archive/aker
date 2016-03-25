@@ -1,88 +1,91 @@
 package logging
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
 
+//go:generate counterfeiter . ResponseRecorder
+
+// DefaultFormatter is the default implementation of Formatter and is used by
+// DefaultLoggingHandlerFactory.
+var DefaultFormatter = defaultFormatter{}
+
+// TimeProviderFunc represents a factory function that returns the current time
 type TimeProviderFunc func() time.Time
 
-type LoggingHandlerFactory struct {
+// HandlerFactory constructs handlers that logs each request.
+//
+// The format of each log entry is determined via the Formatter.
+//
+// The StartedAt and FinishedAt fields of each AccessEntry are determined via
+// the specified time provider. This is useful at least for testing purposes.
+type HandlerFactory struct {
 	TimeProvider TimeProviderFunc
+	Formatter    Formatter
 }
 
-func (f *LoggingHandlerFactory) LoggingHandler(log io.Writer, h http.Handler) http.Handler {
+// LoggingHandler returns new http.Handler that logs.
+func (f *HandlerFactory) LoggingHandler(log io.Writer, h http.Handler) http.Handler {
 	return &loggingHandler{
 		Handler: h,
 		log:     log,
 		now:     f.TimeProvider,
+		format:  f.Formatter,
 	}
 }
 
-func LoggingHandler(log io.Writer, h http.Handler) http.Handler {
-	f := &LoggingHandlerFactory{time.Now}
-	return f.LoggingHandler(log, h)
+// DefaultLoggingHandlerFactory is the default implementation of
+// HandlerFactory.
+var DefaultLoggingHandlerFactory = HandlerFactory{
+	TimeProvider: time.Now,
+	Formatter:    DefaultFormatter,
+}
+
+// Handler returns http.Handler that logs using the DefaultFormatter.
+func Handler(log io.Writer, h http.Handler) http.Handler {
+	return DefaultLoggingHandlerFactory.LoggingHandler(log, h)
 }
 
 type loggingHandler struct {
 	http.Handler
-	log io.Writer
-	now TimeProviderFunc
+	format Formatter
+	log    io.Writer
+	now    TimeProviderFunc
 }
 
+// ServeHTTP calls the ServeHTTP of the underlying handler and logs.
 func (h *loggingHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	wrec := &responseRecorder{ResponseWriter: w}
 	defer func(startedAt time.Time) {
-		e := &accessEntry{
-			startedAt:  startedAt,
-			finishedAt: h.now(),
-			req:        req,
-			resp:       wrec,
+		e := &AccessEntry{
+			StartedAt:  startedAt,
+			FinishedAt: h.now(),
+			Request:    req,
+			Response:   wrec,
 		}
-		e.WriteTo(h.log)
+		h.log.Write([]byte(h.format.Format(e)))
 	}(h.now())
 
 	h.Handler.ServeHTTP(wrec, req)
 }
 
-type accessEntry struct {
-	req        *http.Request
-	resp       *responseRecorder
-	startedAt  time.Time
-	finishedAt time.Time
+// AccessEntry contains information about a processed HTTP request.
+// It should not be modified.
+type AccessEntry struct {
+	Request    *http.Request
+	Response   ResponseRecorder
+	StartedAt  time.Time
+	FinishedAt time.Time
 }
 
-func (e *accessEntry) String() string {
-	return fmt.Sprintf(`%s - [%s] "%s %s %s" %d %d %d "%s" "%s" %s aker_request_id:%s response_time:%f`+"\n",
-		e.req.URL.Host,
-		e.startedAt.Format("02/01/2006:15:04:05 -0700"),
-		e.req.Method,
-		e.req.URL.RequestURI(),
-		e.req.Proto,
-		e.resp.status,
-		e.req.ContentLength,
-		e.resp.size,
-		e.formatHeader("Referer"),
-		e.formatHeader("User-Agent"),
-		e.req.RemoteAddr,
-		e.formatHeader("X-Aker-Request-Id"),
-		e.finishedAt.Sub(e.startedAt).Seconds(),
-	)
-}
-
-func (e *accessEntry) WriteTo(w io.Writer) (int64, error) {
-	count, err := w.Write([]byte(e.String()))
-	return int64(count), err
-}
-
-func (e *accessEntry) formatHeader(name string) string {
-	v := e.req.Header.Get(name)
-	if v == "" {
-		return "-"
-	}
-	return v
+// ResponseRecorder represents http.ResponseWriter which keeps track of the
+// response status code and response body size (in bytes).
+type ResponseRecorder interface {
+	http.ResponseWriter
+	Status() int
+	Size() int
 }
 
 type responseRecorder struct {
@@ -107,4 +110,14 @@ func (r *responseRecorder) Write(data []byte) (int, error) {
 func (r *responseRecorder) WriteHeader(status int) {
 	r.ResponseWriter.WriteHeader(status)
 	r.status = status
+}
+
+// Status returns the HTTP status code of the response.
+func (r *responseRecorder) Status() int {
+	return r.status
+}
+
+// Size returns the length in bytes of the response body.
+func (r *responseRecorder) Size() int {
+	return r.size
 }

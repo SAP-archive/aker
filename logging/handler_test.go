@@ -2,86 +2,87 @@ package logging_test
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"time"
 
 	. "github.infra.hana.ondemand.com/I061150/aker/logging"
+	"github.infra.hana.ondemand.com/I061150/aker/logging/fakes"
 
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 )
 
-type dummyHandler struct{}
+type countHandler struct {
+	serveCount int
+}
 
-func (h dummyHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (h *countHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	_, err := w.Write([]byte("Sample"))
 	Ω(err).ShouldNot(HaveOccurred())
+	h.serveCount++
 }
+
+type countTimeProvider struct {
+	nowCount int
+}
+
+func (t *countTimeProvider) Now() time.Time {
+	t.nowCount++
+	return time.Time{}
+}
+
+func (t *countTimeProvider) NowCallCount() int { return t.nowCount }
 
 var _ = Describe("LoggingHandler", func() {
 
-	const url = "http://someurl.com/path"
+	var timeProvider *countTimeProvider
+	var formatter *fakes.FakeFormatter
 
-	var log *bytes.Buffer
+	var out *bytes.Buffer
 	var handler http.Handler
 
 	BeforeEach(func() {
-		log = new(bytes.Buffer)
-		handlerFactory := LoggingHandlerFactory{
-			TimeProvider: func() time.Time {
-				return time.Time{}
-			},
+		timeProvider = new(countTimeProvider)
+		formatter = new(fakes.FakeFormatter)
+		formatter.FormatReturns("formated")
+		factory := HandlerFactory{
+			TimeProvider: timeProvider.Now,
+			Formatter:    formatter,
 		}
-		handler = handlerFactory.LoggingHandler(log, dummyHandler{})
+
+		out = new(bytes.Buffer)
+		handler = factory.LoggingHandler(out, &countHandler{0})
 	})
 
-	DescribeTable("access entry logging", func(req *http.Request, expected string) {
-		log.Reset()
-		w := &httptest.ResponseRecorder{
-			Body: new(bytes.Buffer),
-		}
-		handler.ServeHTTP(w, req)
-		Ω(log.String()).Should(Equal(expected))
-	},
-		Entry("GET", newRequest("GET", url, ""),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "GET /path HTTP/1.1" 200 0 6 "-" "-"  aker_request_id:- response_time:0.000000`)),
-		Entry("POST", newRequest("POST", url, "data"),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "POST /path HTTP/1.1" 200 4 6 "-" "-"  aker_request_id:- response_time:0.000000`)),
-		Entry("DELETE", newRequest("DELETE", url, "delete data"),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "DELETE /path HTTP/1.1" 200 11 6 "-" "-"  aker_request_id:- response_time:0.000000`)),
-		Entry("GET with query params", newRequest("GET", url+"?q=1", ""),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "GET /path?q=1 HTTP/1.1" 200 0 6 "-" "-"  aker_request_id:- response_time:0.000000`)),
-		Entry("X-Aker-Request-Id", newRequestWithHeader("GET", url, "", "X-Aker-Request-Id:15"),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "GET /path HTTP/1.1" 200 0 6 "-" "-"  aker_request_id:15 response_time:0.000000`)),
-		Entry("User-Agent", newRequestWithHeader("GET", url, "", "User-Agent:godzilla"),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "GET /path HTTP/1.1" 200 0 6 "-" "godzilla"  aker_request_id:- response_time:0.000000`)),
-		Entry("Referer", newRequestWithHeader("GET", url, "", "Referer:ref"),
-			line(`someurl.com - [01/01/0001:00:00:00 +0000] "GET /path HTTP/1.1" 200 0 6 "ref" "-"  aker_request_id:- response_time:0.000000`)),
-	)
+	Context("when request finishes", func() {
+		var req *http.Request
+		var resp *httptest.ResponseRecorder
+
+		BeforeEach(func() {
+			req = request("GET", "http://hack.me", "")
+			resp = new(httptest.ResponseRecorder)
+			handler.ServeHTTP(resp, req)
+		})
+
+		It("should have sampled start and finish timestamps", func() {
+			Ω(timeProvider.NowCallCount()).Should(Equal(2))
+		})
+
+		It("should have called the formatter", func() {
+			Ω(formatter.FormatCallCount()).Should(Equal(1))
+
+			accessEntryArg := formatter.FormatArgsForCall(0)
+
+			Ω(accessEntryArg.StartedAt).Should(Equal(time.Time{}))
+			Ω(accessEntryArg.FinishedAt).Should(Equal(time.Time{}))
+
+			Ω(accessEntryArg.Request).Should(Equal(req))
+		})
+
+		It("should have written to output sink", func() {
+			Ω(out.String()).Should(Equal("formated"))
+		})
+	})
+
 })
-
-func line(s string) string {
-	return s + "\n"
-}
-
-func newRequest(method, url, body string) *http.Request {
-	req, err := http.NewRequest(method, url, bytes.NewBufferString(body))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return req
-}
-
-func newRequestWithHeader(method, url, body, header string) *http.Request {
-	req := newRequest(method, url, body)
-	kv := strings.Split(header, ":")
-	if len(kv) != 2 {
-		log.Fatalf("Unsupported header format %q\n", header)
-	}
-	req.Header.Set(kv[0], kv[1])
-	return req
-}
