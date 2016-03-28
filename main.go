@@ -68,7 +68,9 @@ func NewHeaderSticker(h http.Handler, headers map[string]func() string) *HeaderS
 
 func (s *HeaderSticker) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for header, valueFunc := range s.headers {
-		req.Header.Add(header, valueFunc())
+		value := valueFunc()
+		req.Header.Add(header, value)
+		w.Header().Add(header, value)
 	}
 	s.Handler.ServeHTTP(w, req)
 }
