@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
-
 	"github.infra.hana.ondemand.com/I061150/aker/config"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/plugin"
@@ -75,14 +73,14 @@ func (b *chainBuilder) build(references []config.PluginReference) (http.Handler,
 	return lastPlugin, nil
 }
 
-func (b *chainBuilder) buildPlugin(cfg config.PluginReference, next *plugin.Plugin) (*plugin.Plugin, error) {
-	cfgData, err := candiedyaml.Marshal(cfg.Config)
+func (b *chainBuilder) buildPlugin(reference config.PluginReference, next *plugin.Plugin) (*plugin.Plugin, error) {
+	cfgData, err := plugin.MarshalConfig(reference.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	logging.Infof("Opening plugin: %q", cfg.Name)
-	plug, err := b.plugin.Open(cfg.Name, cfgData, next)
+	logging.Infof("Opening plugin: %q", reference.Name)
+	plug, err := b.plugin.Open(reference.Name, cfgData, next)
 	if err != nil {
 		return nil, err
 	}
