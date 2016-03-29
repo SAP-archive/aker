@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	Server    ServerConfig     `yaml:"server"`
-	Endpoints []EndpointConfig `yaml:"endpoints"`
+	Server    ServerConfig `yaml:"server"`
+	Endpoints []Endpoint   `yaml:"endpoints"`
 }
 
 type ServerConfig struct {
@@ -17,7 +17,7 @@ type ServerConfig struct {
 	Port int    `yaml:"port"`
 }
 
-type EndpointConfig struct {
+type Endpoint struct {
 	Path    string                  `yaml:"path"`
 	Audit   bool                    `yaml:"audit"`
 	Plugins []PluginReferenceConfig `yaml:"plugins"`

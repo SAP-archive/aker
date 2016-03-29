@@ -16,7 +16,7 @@ type Handler struct {
 	pluginChain http.Handler
 }
 
-func NewHandler(endpoint config.EndpointConfig) (*Handler, error) {
+func NewHandler(endpoint config.Endpoint) (*Handler, error) {
 	pluginChain, err := buildPluginChain(endpoint.Plugins)
 	if err != nil {
 		return nil, err

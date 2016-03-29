@@ -29,12 +29,12 @@ var _ = Describe("Config", func() {
 
 			It("should have proper endpoint section", func() {
 				Ω(len(config.Endpoints)).Should(Equal(2))
-				Ω(config.Endpoints[0]).Should(Equal(EndpointConfig{
+				Ω(config.Endpoints[0]).Should(Equal(Endpoint{
 					Path:    "/",
 					Audit:   false,
 					Plugins: []PluginReferenceConfig{},
 				}))
-				Ω(config.Endpoints[1]).Should(Equal(EndpointConfig{
+				Ω(config.Endpoints[1]).Should(Equal(Endpoint{
 					Path:  "/proxy",
 					Audit: true,
 					Plugins: []PluginReferenceConfig{
