@@ -32,13 +32,13 @@ var _ = Describe("Config", func() {
 				Ω(config.Endpoints[0]).Should(Equal(Endpoint{
 					Path:    "/",
 					Audit:   false,
-					Plugins: []PluginReferenceConfig{},
+					Plugins: []PluginReference{},
 				}))
 				Ω(config.Endpoints[1]).Should(Equal(Endpoint{
 					Path:  "/proxy",
 					Audit: true,
-					Plugins: []PluginReferenceConfig{
-						PluginReferenceConfig{
+					Plugins: []PluginReference{
+						PluginReference{
 							Name: "aker-proxy",
 							Config: map[string]interface{}{
 								"url": "http://location.com",

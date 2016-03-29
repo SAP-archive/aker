@@ -36,7 +36,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	h.pluginChain.ServeHTTP(w, req)
 }
 
-func buildPluginChain(references []config.PluginReferenceConfig) (http.Handler, error) {
+func buildPluginChain(references []config.PluginReference) (http.Handler, error) {
 	index := len(references) - 1
 	lastPlugin, err := buildPlugin(references[index], nil)
 	if err != nil {
@@ -52,7 +52,7 @@ func buildPluginChain(references []config.PluginReferenceConfig) (http.Handler, 
 	return lastPlugin, nil
 }
 
-func buildPlugin(cfg config.PluginReferenceConfig, next *plugin.Plugin) (*plugin.Plugin, error) {
+func buildPlugin(cfg config.PluginReference, next *plugin.Plugin) (*plugin.Plugin, error) {
 	cfgData, err := candiedyaml.Marshal(cfg.Config)
 	if err != nil {
 		return nil, err
