@@ -4,13 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os"
-
-	"github.com/cloudfoundry-incubator/candiedyaml"
 
 	"github.infra.hana.ondemand.com/I061150/aker/config"
+	"github.infra.hana.ondemand.com/I061150/aker/endpoint"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
-	"github.infra.hana.ondemand.com/I061150/aker/plugin"
 	"github.infra.hana.ondemand.com/I061150/aker/uuid"
 )
 
@@ -28,15 +25,12 @@ func main() {
 		logging.Fatalf("Failed to load configuration due to %q", err.Error())
 	}
 	mux := http.NewServeMux()
-	for _, endpoint := range cfg.Endpoints {
-		leadingPlugin, err := buildPluginChain(endpoint.Plugins)
+	for _, endpointCfg := range cfg.Endpoints {
+		endpointHandler, err := endpoint.NewHandler(endpointCfg)
 		if err != nil {
 			logging.Fatalf("Failed to build plugin chain due to %q", err.Error())
 		}
-		if endpoint.Audit {
-			leadingPlugin = logging.Handler(os.Stdout, leadingPlugin)
-		}
-		mux.Handle(endpoint.Path, leadingPlugin)
+		mux.Handle(endpointCfg.Path, endpointHandler)
 	}
 
 	logging.Infof("Starting HTTP listener...")
@@ -73,34 +67,4 @@ func (s *HeaderSticker) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.Header().Add(header, value)
 	}
 	s.Handler.ServeHTTP(w, req)
-}
-
-func buildPluginChain(references []config.PluginReferenceConfig) (http.Handler, error) {
-	index := len(references) - 1
-	lastPlugin, err := buildPlugin(references[index], nil)
-	if err != nil {
-		return nil, err
-	}
-	for index > 0 {
-		index--
-		lastPlugin, err = buildPlugin(references[index], lastPlugin)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return lastPlugin, nil
-}
-
-func buildPlugin(cfg config.PluginReferenceConfig, next *plugin.Plugin) (*plugin.Plugin, error) {
-	cfgData, err := candiedyaml.Marshal(cfg.Config)
-	if err != nil {
-		return nil, err
-	}
-
-	logging.Infof("Opening plugin: %q", cfg.Name)
-	plug, err := plugin.Open(cfg.Name, cfgData, next)
-	if err != nil {
-		return nil, err
-	}
-	return plug, nil
 }
