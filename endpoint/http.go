@@ -19,12 +19,15 @@ func (e InvalidPathError) Error() string {
 
 var NoPluginsErr = errors.New("no plugins specified")
 
+// Handler represents Aker endpoint.
 type Handler struct {
 	path        string
 	plugin      plugin.Opener
 	pluginChain http.Handler
 }
 
+// NewHandler creates new endpoint handler. It opens all plugins specified
+// by endpoint using the provided Opener.
 func NewHandler(endpoint config.Endpoint, opener plugin.Opener) (*Handler, error) {
 	if endpoint.Path == "" {
 		return nil, InvalidPathError("")
@@ -49,6 +52,7 @@ func NewHandler(endpoint config.Endpoint, opener plugin.Opener) (*Handler, error
 	}, nil
 }
 
+// ServeHTTP routes the incoming http.Request through the chain of aker plugins.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	h.pluginChain.ServeHTTP(w, req)
 }
