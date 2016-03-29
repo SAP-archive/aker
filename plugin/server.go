@@ -30,6 +30,10 @@ func ListenAndServe(factory HandlerFactory) error {
 	return socket.ListenAndServe(setup.SocketPath, handler)
 }
 
+func Unmarshal(data []byte, v interface{}) error {
+	return json.Unmarshal(data, v)
+}
+
 type responseTracker struct {
 	http.ResponseWriter
 	done bool
