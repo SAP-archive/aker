@@ -8,6 +8,7 @@ import (
 	"github.infra.hana.ondemand.com/I061150/aker/config"
 	"github.infra.hana.ondemand.com/I061150/aker/endpoint"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
+	"github.infra.hana.ondemand.com/I061150/aker/plugin"
 	"github.infra.hana.ondemand.com/I061150/aker/uuid"
 )
 
@@ -26,7 +27,7 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	for _, endpointCfg := range cfg.Endpoints {
-		endpointHandler, err := endpoint.NewHandler(endpointCfg)
+		endpointHandler, err := endpoint.NewHandler(endpointCfg, plugin.DefaultOpener)
 		if err != nil {
 			logging.Fatalf("Failed to build plugin chain due to %q", err.Error())
 		}
