@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/socket"
 )
@@ -29,14 +28,6 @@ func ListenAndServe(factory HandlerFactory) error {
 
 	logging.Infof("Listening on socket: %s\n", setup.SocketPath)
 	return socket.ListenAndServe(setup.SocketPath, handler)
-}
-
-func UnmarshalConfig(data []byte, v interface{}) error {
-	return candiedyaml.Unmarshal(data, v)
-}
-
-func MarshalConfig(v interface{}) ([]byte, error) {
-	return candiedyaml.Marshal(v)
 }
 
 type responseTracker struct {
