@@ -26,4 +26,13 @@ var _ = Describe("UUID", func() {
 			UUID{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 			"ffffffff-ffff-ffff-ffff-ffffffffffff"))
+
+	Describe("Random", func() {
+		It("should return random UUID", func() {
+			uid, err := Random()
+
+			Ω(uid.String()).ShouldNot(BeEmpty())
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+	})
 })
