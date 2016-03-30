@@ -50,7 +50,17 @@ var _ = Describe("Config", func() {
 
 		Context("when the config file is invalid", func() {
 			BeforeEach(func() {
-				config, err = LoadFromFile("./invalid_config.yml")
+				_, err = LoadFromFile("./invalid_config.yml")
+			})
+
+			It("should have returned an error", func() {
+				Ω(err).Should(HaveOccurred())
+			})
+		})
+
+		Context("when there is problem opening the config file", func() {
+			BeforeEach(func() {
+				_, err = LoadFromFile("/not/existing")
 			})
 
 			It("should have returned an error", func() {
