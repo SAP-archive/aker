@@ -14,7 +14,7 @@ import (
 type InvalidPathError string
 
 func (e InvalidPathError) Error() string {
-	return fmt.Sprintf("invalid endpoint path: %q", e)
+	return fmt.Sprintf("invalid endpoint path: %q", string(e))
 }
 
 var NoPluginsErr = errors.New("no plugins specified")

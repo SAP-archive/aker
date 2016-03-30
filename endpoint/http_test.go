@@ -118,3 +118,13 @@ var _ = Describe("Handler", func() {
 		})
 	})
 })
+
+var _ = Describe("Errors", func() {
+
+	Describe("InvalidPathError", func() {
+		It("should return proper error message", func() {
+			err := InvalidPathError("path")
+			Ω(err.Error()).Should(Equal(`invalid endpoint path: "path"`))
+		})
+	})
+})
