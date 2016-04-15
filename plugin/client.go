@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.wdf.sap.corp/I061150/aker/socket"
+	"github.infra.hana.ondemand.com/I061150/aker/socket"
 )
 
 type Plugin struct {

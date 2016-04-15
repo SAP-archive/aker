@@ -7,9 +7,9 @@ import (
 
 	"github.com/cloudfoundry-incubator/candiedyaml"
 
-	"github.wdf.sap.corp/I061150/aker/config"
-	"github.wdf.sap.corp/I061150/aker/logging"
-	"github.wdf.sap.corp/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/I061150/aker/config"
+	"github.infra.hana.ondemand.com/I061150/aker/logging"
+	"github.infra.hana.ondemand.com/I061150/aker/plugin"
 )
 
 var configLocationFlag = flag.String(

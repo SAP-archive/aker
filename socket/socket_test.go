@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	. "github.wdf.sap.corp/I061150/aker/socket"
+	. "github.infra.hana.ondemand.com/I061150/aker/socket"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

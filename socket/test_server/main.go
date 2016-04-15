@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.wdf.sap.corp/I061150/aker/socket"
+	"github.infra.hana.ondemand.com/I061150/aker/socket"
 )
 
 const greeting = "You shall pass, this time!"
