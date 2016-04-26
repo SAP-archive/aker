@@ -72,8 +72,9 @@ func (e *accessEntry) String() string {
 	)
 }
 
-func (e *accessEntry) WriteTo(w io.Writer) (int, error) {
-	return w.Write([]byte(e.String()))
+func (e *accessEntry) WriteTo(w io.Writer) (int64, error) {
+	count, err := w.Write([]byte(e.String()))
+	return int64(count), err
 }
 
 func (e *accessEntry) formatHeader(name string) string {
