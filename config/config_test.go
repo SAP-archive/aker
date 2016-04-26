@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	. "github.wdf.sap.corp/I061150/aker/config"
+	. "github.infra.hana.ondemand.com/I061150/aker/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
