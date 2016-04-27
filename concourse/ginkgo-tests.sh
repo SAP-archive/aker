@@ -14,4 +14,4 @@ echo "Fetching test tools..."
 go get github.com/onsi/ginkgo/ginkgo
 
 echo "Running tests..."
-ginkgo -r
+ginkgo -r --skipMeasurements
