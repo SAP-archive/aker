@@ -1,6 +1,8 @@
 package uuid_test
 
 import (
+	"sync"
+
 	. "github.infra.hana.ondemand.com/I061150/aker/uuid"
 
 	. "github.com/onsi/ginkgo"
@@ -45,4 +47,18 @@ var _ = Describe("UUID", func() {
 			Ω(first.String()).ShouldNot(Equal(second.String()))
 		})
 	})
+
+	Measure("Performance", func(b Benchmarker) {
+		b.Time("runtime", func() {
+			wait := &sync.WaitGroup{}
+			for i := 0; i < 50000; i++ {
+				wait.Add(1)
+				go func() {
+					Random()
+					wait.Done()
+				}()
+			}
+			wait.Wait()
+		})
+	}, 100)
 })
