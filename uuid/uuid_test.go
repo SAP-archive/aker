@@ -25,14 +25,24 @@ var _ = Describe("UUID", func() {
 		Entry("Last",
 			UUID{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-			"ffffffff-ffff-ffff-ffff-ffffffffffff"))
+			"ffffffff-ffff-ffff-ffff-ffffffffffff"),
+	)
 
 	Describe("Random", func() {
-		It("should return random UUID", func() {
+		It("should generate a UUID", func() {
 			uid, err := Random()
-
-			Ω(uid.String()).ShouldNot(BeEmpty())
 			Ω(err).ShouldNot(HaveOccurred())
+			Ω(uid.String()).ShouldNot(BeEmpty())
+			Ω(uid.String()).Should(HaveLen(36))
+		})
+
+		It("should return random UUID", func() {
+			first, err := Random()
+			Ω(err).ShouldNot(HaveOccurred())
+			second, err := Random()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(first.String()).ShouldNot(Equal(second.String()))
 		})
 	})
 })
