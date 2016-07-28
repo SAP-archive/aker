@@ -19,7 +19,7 @@ var _ = Describe("Socket", func() {
 
 	BeforeEach(func() {
 		var err error
-		socketPath, err = GetUniqueSocketPath("aker-test")
+		socketPath, err = GetUniquePath("aker-test")
 		Ω(err).ShouldNot(HaveOccurred())
 	})
 
@@ -53,7 +53,7 @@ var _ = Describe("Socket", func() {
 			response := httptest.NewRecorder()
 			response.Code = -1 // Make sure we have been actually called
 
-			handler := Proxy(socketPath)
+			handler := ProxyHTTP(socketPath)
 			handler.ServeHTTP(response, request)
 
 			Ω(response.Code).Should(Equal(http.StatusOK))

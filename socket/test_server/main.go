@@ -13,7 +13,7 @@ const greeting = "You shall pass, this time!"
 
 func main() {
 	socketPath := readSocketPath()
-	socket.ListenAndServe(socketPath, http.HandlerFunc(serverFunc))
+	socket.ListenAndServeHTTP(socketPath, http.HandlerFunc(serverFunc))
 }
 
 func readSocketPath() string {

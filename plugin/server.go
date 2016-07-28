@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -11,11 +12,19 @@ import (
 
 type HandlerFactory func(config []byte) (http.Handler, error)
 
-func ListenAndServe(factory HandlerFactory) error {
+type ConfigDecodeError struct {
+	original error
+}
+
+func (e *ConfigDecodeError) Error() string {
+	return fmt.Sprintf("error decoding plugin config: %v", e.original.Error())
+}
+
+func ListenAndServeHTTP(factory HandlerFactory) error {
 	var setup setup
 	decoder := json.NewDecoder(os.Stdin)
 	if err := decoder.Decode(&setup); err != nil {
-		return err
+		return &ConfigDecodeError{err}
 	}
 
 	handler, err := factory(setup.Configuration)
@@ -27,7 +36,7 @@ func ListenAndServe(factory HandlerFactory) error {
 	}
 
 	logging.Infof("Listening on socket: %s\n", setup.SocketPath)
-	return socket.ListenAndServe(setup.SocketPath, handler)
+	return socket.ListenAndServeHTTP(setup.SocketPath, handler)
 }
 
 type responseTracker struct {
@@ -48,7 +57,7 @@ func (w *responseTracker) WriteHeader(status int) {
 func newForwardHandler(current http.Handler, nextSocket string) http.Handler {
 	return &forwardHandler{
 		current: current,
-		next:    socket.Proxy(nextSocket),
+		next:    socket.ProxyHTTP(nextSocket),
 	}
 }
 

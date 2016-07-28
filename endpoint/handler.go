@@ -1,8 +1,6 @@
 package endpoint
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -10,14 +8,6 @@ import (
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/plugin"
 )
-
-type InvalidPathError string
-
-func (e InvalidPathError) Error() string {
-	return fmt.Sprintf("invalid endpoint path: %q", string(e))
-}
-
-var NoPluginsErr = errors.New("no plugins specified")
 
 // Handler represents Aker endpoint.
 type Handler struct {

@@ -10,7 +10,8 @@ import (
 const retryCount = 5
 const retryInterval = time.Second
 
-func Proxy(socketPath string) http.Handler {
+// ProxyHTTP proxies all requests to the specified socket path.
+func ProxyHTTP(socketPath string) http.Handler {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.URL.Scheme = "http"
@@ -31,7 +32,6 @@ func Proxy(socketPath string) http.Handler {
 				}
 				return nil, err
 			},
-			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}

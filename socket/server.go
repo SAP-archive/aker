@@ -7,7 +7,8 @@ import (
 	"os"
 )
 
-func ListenAndServe(path string, handler http.Handler) error {
+// ListenAndServeHTTP starts a HTTP server which is binded to the specified socket path.
+func ListenAndServeHTTP(path string, handler http.Handler) error {
 	listener, err := net.Listen("unix", path)
 	if err != nil {
 		return err
@@ -20,7 +21,8 @@ func ListenAndServe(path string, handler http.Handler) error {
 	return server.Serve(listener)
 }
 
-func GetUniqueSocketPath(prefix string) (string, error) {
+// GetUniquePath returns path that has nothing on it.
+func GetUniquePath(prefix string) (string, error) {
 	tmpFile, err := ioutil.TempFile("", prefix)
 	if err != nil {
 		return "", err
