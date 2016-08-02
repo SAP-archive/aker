@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
+	"time"
 
 	. "github.infra.hana.ondemand.com/I061150/aker/plugin"
 
@@ -34,7 +35,11 @@ var _ = Describe("Open Plugin", func() {
 	})
 
 	JustBeforeEach(func() {
-		plugin, err = Open("./"+pluginName, config, nil)
+		opener := &Opener{
+			PluginStdout: GinkgoWriter,
+			PluginStderr: GinkgoWriter,
+		}
+		plugin, err = opener.Open("./"+pluginName, config, nil)
 	})
 
 	Context("when the plugin does not exist", func() {
@@ -54,14 +59,22 @@ var _ = Describe("Open Plugin", func() {
 			config = []byte("lalalalala")
 		})
 
-		It("should have not returned an error", func() {
-			Ω(err).ShouldNot(HaveOccurred())
-			Ω(plugin).ShouldNot(BeNil())
+		AfterEach(func() {
+			// signal plugin's process to exit
+			Ω(plugin.Close()).Should(Succeed())
 		})
 
-		It("should have received the correct configuration", func() {
+		It("should not return an error", func() {
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(plugin).ShouldNot(BeNil())
+			// give the process chance to start
+			time.Sleep(time.Millisecond * 20)
+		})
+
+		It("should receive the correct configuration", func() {
 			rr := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "http://does.not.matter.com", nil)
+			req, err := http.NewRequest("GET", "http://does.not.matter.com", nil)
+			Ω(err).ShouldNot(HaveOccurred())
 			plugin.ServeHTTP(rr, req)
 			Ω(rr.Body.Bytes()).Should(Equal(config))
 		})

@@ -3,6 +3,7 @@ package plugin
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"os/exec"
 
@@ -14,19 +15,22 @@ func Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 	return DefaultOpener.Open(name, config, next)
 }
 
-// Opener wraps the basic Open plugin method.
-type Opener interface {
-	// Open should connect to and configure the specified plugin.
-	Open(name string, config []byte, next *Plugin) (*Plugin, error)
+// DefaultOpener redirects the plugin's stdout and stderr to the calling process's
+// stdout and stderr.
+var DefaultOpener = &Opener{
+	PluginStdout: os.Stdout,
+	PluginStderr: os.Stderr,
 }
 
-// DefaultOpener is the default implementation of Opener.
-var DefaultOpener = opener{}
-
-type opener struct {
+// Opener opens a plugin as a subprocess.
+type Opener struct {
+	// Stdout of the child process is redirected to PluginStdout.
+	PluginStdout io.Writer
+	// Stderr of the child process is redirected to PluginStderr.
+	PluginStderr io.Writer
 }
 
-func (o opener) Open(name string, config []byte, next *Plugin) (*Plugin, error) {
+func (o *Opener) Open(name string, config []byte, next *Plugin) (*Plugin, error) {
 	socketPath, err := socket.GetUniquePath("aker-plugin")
 	if err != nil {
 		return nil, err
@@ -43,13 +47,15 @@ func (o opener) Open(name string, config []byte, next *Plugin) (*Plugin, error) 
 
 	cmd := exec.Command(name)
 	cmd.Stdin = bytes.NewReader(setup)
-	cmd.Stdout = newLogWriter(name, os.Stdout)
-	cmd.Stderr = newLogWriter(name, os.Stderr)
+	cmd.Stdout = newLogWriter(name, o.PluginStdout)
+	cmd.Stderr = newLogWriter(name, o.PluginStderr)
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+
 	return &Plugin{
 		socketPath: socketPath,
 		Handler:    socket.ProxyHTTP(socketPath),
+		process:    cmd.Process,
 	}, nil
 }

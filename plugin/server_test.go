@@ -1,12 +1,15 @@
 package plugin_test
 
 import (
+	"bytes"
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	. "github.infra.hana.ondemand.com/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/I061150/aker/plugin/pluginfakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,30 +17,31 @@ import (
 
 var _ = Describe("ListenAndServeHTTP", func() {
 
-	var stdin *os.File
 	var factory HandlerFactory
+	var config []byte
+
+	var fakeSocket *pluginfakes.FakeSocket
+	var fakeNotifier *pluginfakes.FakeNotifier
+	var testLogger logging.Logger
+
+	var server *Server
 	var err error
 
 	BeforeEach(func() {
-		fd, fErr := ioutil.TempFile("", "aker-test")
-		Ω(fErr).ShouldNot(HaveOccurred())
-		stdin = fd
-	})
-
-	AfterEach(func() {
-		stdin.Close()
-		os.Remove(stdin.Name())
+		fakeSocket = new(pluginfakes.FakeSocket)
+		fakeNotifier = new(pluginfakes.FakeNotifier)
+		testLogger = logging.NewNativeLogger(GinkgoWriter, GinkgoWriter)
 	})
 
 	JustBeforeEach(func() {
-		stdin.Seek(0, 0)
-		os.Stdin = stdin
-		err = ListenAndServeHTTP(factory)
+		server = NewServer(bytes.NewBuffer(config), testLogger, fakeSocket, fakeNotifier)
+		err = server.ListenAndServeHTTP(factory)
 	})
 
 	Context("when the config passed to stdin is malformed", func() {
+
 		BeforeEach(func() {
-			stdin.Write([]byte("invalid json"))
+			config = []byte("invalid json")
 		})
 
 		It("should return a ConfigDecodeError", func() {
@@ -48,8 +52,9 @@ var _ = Describe("ListenAndServeHTTP", func() {
 	})
 
 	Context("when the config passed to stdin is valid", func() {
+
 		BeforeEach(func() {
-			stdin.Write([]byte("{}\n"))
+			config = buildConfig("", "")
 		})
 
 		Context("and the factory returns an error", func() {
@@ -66,8 +71,70 @@ var _ = Describe("ListenAndServeHTTP", func() {
 				Ω(err).Should(HaveOccurred())
 				Ω(err).Should(Equal(factoryErr))
 			})
+		})
 
+		Context("and the factory returns non-nil handler and no error", func() {
+
+			var socketPath string
+			var handler http.Handler
+			var httpServer *pluginfakes.FakeHTTPServer
+
+			BeforeEach(func() {
+				socketPath = "/tmp/aker.sock"
+				config = buildConfig(socketPath, "")
+
+				handler = http.NewServeMux() // we do not care what this is, as long as it is not nil
+				factory = func(_ []byte) (http.Handler, error) {
+					return handler, nil
+				}
+
+				httpServer = new(pluginfakes.FakeHTTPServer)
+				fakeSocket.NewHTTPServerReturns(httpServer)
+				fakeNotifier.NotifyStub = func(c chan<- os.Signal, sig ...os.Signal) {
+					// make sure that ListenAndServeHTTP does not block on this channel
+					close(c)
+				}
+			})
+
+			It("should start HTTP server with the returned handler", func() {
+				Ω(fakeSocket.NewHTTPServerCallCount()).Should(Equal(1))
+				argSocketPath, argHandler := fakeSocket.NewHTTPServerArgsForCall(0)
+				Ω(argSocketPath).Should(Equal(socketPath))
+				Ω(argHandler).Should(Equal(handler))
+
+				Ω(httpServer.StartCallCount()).Should(Equal(1))
+			})
+
+			It("should stop the HTTP server when signaled", func() {
+				Ω(httpServer.StopCallCount()).Should(Equal(1))
+			})
+
+			Context("and the config has empty ForwardSocketPath field", func() {
+				It("should not call socket.ProxyHTTP", func() {
+					Ω(fakeSocket.ProxyHTTPCallCount()).Should(BeZero())
+				})
+			})
+
+			Context("and the config has non-empty ForwardSocketPath field", func() {
+
+				var forwardSocketPath string
+
+				BeforeEach(func() {
+					forwardSocketPath = "non-empty"
+					config = buildConfig("", forwardSocketPath)
+				})
+
+				It("should create socket HTTP proxy to ForwardSocketPath", func() {
+					Ω(fakeSocket.ProxyHTTPCallCount()).Should(Equal(1))
+					path := fakeSocket.ProxyHTTPArgsForCall(0)
+					Ω(path).Should(Equal(forwardSocketPath))
+				})
+			})
 		})
 	})
-
 })
+
+func buildConfig(socketPath, forwardSocketPath string) []byte {
+	return []byte(fmt.Sprintf(`{"socket_path":"%s","forward_socket_path":"%s"}`,
+		socketPath, forwardSocketPath))
+}
