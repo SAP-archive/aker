@@ -15,16 +15,14 @@ func ProxyHTTP(socketPath string) http.Handler {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.URL.Scheme = "http"
-			req.URL.Host = "localhost"
 		},
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			Dial: func(network, addr string) (net.Conn, error) {
+			Dial: func(_, _ string) (net.Conn, error) {
 				var err error
-				var con net.Conn
+				var conn net.Conn
 				for i := 1; i <= retryCount; i++ {
-					if con, err = net.Dial("unix", socketPath); err == nil {
-						return con, nil
+					if conn, err = net.Dial("unix", socketPath); err == nil {
+						return conn, nil
 					}
 					if i < retryCount {
 						time.Sleep(retryInterval)

@@ -1,8 +1,8 @@
 package socket_test
 
 import (
-	"os"
-	"os/exec"
+	"io"
+	"net/http"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,22 +10,11 @@ import (
 	"testing"
 )
 
-const testServerName = "test-server"
-
 func TestSocket(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Socket Suite")
 }
 
-var _ = BeforeSuite(func() {
-	buildCmd := exec.Command("go", "build", "-o", testServerName, "test_server/main.go")
-	buildCmd.Stdout = os.Stdout
-	buildCmd.Stderr = os.Stderr
-	err := buildCmd.Run()
-	Ω(err).ShouldNot(HaveOccurred())
-})
-
-var _ = AfterSuite(func() {
-	err := os.Remove(testServerName)
-	Ω(err).ShouldNot(HaveOccurred())
+var EchoHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	io.Copy(w, req.Body)
 })
