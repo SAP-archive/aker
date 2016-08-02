@@ -9,16 +9,24 @@ import (
 	"github.infra.hana.ondemand.com/I061150/aker/plugin"
 )
 
+//go:generate counterfeiter . PluginOpener
+
+// Opener wraps the basic Open plugin method.
+type PluginOpener interface {
+	// Open should connect to and configure the specified plugin.
+	Open(name string, config []byte, next *plugin.Plugin) (*plugin.Plugin, error)
+}
+
 // Handler represents Aker endpoint.
 type Handler struct {
 	path        string
-	plugin      plugin.Opener
+	plugin      PluginOpener
 	pluginChain http.Handler
 }
 
 // NewHandler creates new endpoint handler. It opens all plugins specified
 // by endpoint using the provided Opener.
-func NewHandler(endpoint config.Endpoint, opener plugin.Opener) (*Handler, error) {
+func NewHandler(endpoint config.Endpoint, opener PluginOpener) (*Handler, error) {
 	if endpoint.Path == "" {
 		return nil, InvalidPathError("")
 	}
@@ -48,7 +56,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 type chainBuilder struct {
-	plugin plugin.Opener
+	plugin PluginOpener
 }
 
 func (b *chainBuilder) build(references []config.PluginReference) (http.Handler, error) {

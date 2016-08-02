@@ -5,9 +5,9 @@ import (
 
 	"github.infra.hana.ondemand.com/I061150/aker/config"
 	. "github.infra.hana.ondemand.com/I061150/aker/endpoint"
+	"github.infra.hana.ondemand.com/I061150/aker/endpoint/endpointfakes"
 	"github.infra.hana.ondemand.com/I061150/aker/logging"
 	"github.infra.hana.ondemand.com/I061150/aker/plugin"
-	"github.infra.hana.ondemand.com/I061150/aker/plugin/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,7 +16,7 @@ import (
 var _ = Describe("Handler", func() {
 
 	var endpoint config.Endpoint
-	var opener *fakes.FakeOpener
+	var opener *endpointfakes.FakePluginOpener
 	var handler *Handler
 	var err error
 
@@ -26,7 +26,7 @@ var _ = Describe("Handler", func() {
 
 	BeforeEach(func() {
 		logging.DefaultLogger = logging.NewNativeLogger(GinkgoWriter, GinkgoWriter)
-		opener = new(fakes.FakeOpener)
+		opener = new(endpointfakes.FakePluginOpener)
 	})
 
 	Context("when created with empty config path", func() {
