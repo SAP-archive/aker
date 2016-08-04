@@ -81,22 +81,3 @@ func (l *NativeLogger) printLevel(level, message string, args ...interface{}) {
 	}
 	log.Printf(line, args...)
 }
-
-type MutedLogger struct {
-}
-
-func (l MutedLogger) Debugf(message string, args ...interface{}) {
-}
-
-func (l MutedLogger) Infof(message string, args ...interface{}) {
-}
-
-func (l MutedLogger) Warnf(message string, args ...interface{}) {
-}
-
-func (l MutedLogger) Errorf(message string, args ...interface{}) {
-}
-
-func (l MutedLogger) Fatalf(message string, args ...interface{}) {
-	os.Exit(1)
-}
