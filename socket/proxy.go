@@ -15,6 +15,7 @@ func ProxyHTTP(socketPath string) http.Handler {
 	return &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.URL.Scheme = "http"
+			req.URL.Host = "localhost"
 		},
 		Transport: &http.Transport{
 			Dial: func(_, _ string) (net.Conn, error) {
