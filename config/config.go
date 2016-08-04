@@ -1,3 +1,4 @@
+// Package config defines the structure of Aker's configuration.
 package config
 
 import (

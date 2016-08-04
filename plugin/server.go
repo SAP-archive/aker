@@ -91,32 +91,6 @@ func (n notifier) Notify(c chan<- os.Signal, sig ...os.Signal) {
 var DefaultServer = NewServer(os.Stdin, logging.DefaultLogger, socketProxy{}, notifier{})
 
 // ListenAndServeHTTP starts the http.Handler returned by the factory as plugin.
-// It is the main entry point for implementing an Aker plugin.
-// Example usage:
-//		package main
-//
-//		import (
-//			"fmt"
-//			"net/http"
-//
-//			"github.infra.hana.ondemand.com/I061150/aker/plugin"
-//		)
-//
-//		type Config struct {
-//			URL string `json:"url"`
-//		}
-//
-//		func main() {
-//			plugin.ListenAndServeHTTP(func(data []byte) (http.Handler, error) {
-//				var cfg Config
-//				if err := plugin.UnmarshalConfig(data, &cfg); err != nil {
-//					return nil, err
-//				}
-//
-//				fmt.Printf("Received config: %v\n", cfg)
-//				return nil, nil
-//			})
-//		}
 func (s *Server) ListenAndServeHTTP(factory HandlerFactory) error {
 	var setup setup
 	decoder := json.NewDecoder(s.config)

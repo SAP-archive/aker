@@ -1,3 +1,5 @@
+// Package uuid provides primitives for creating random universally unique
+// identifiers.
 package uuid
 
 import (

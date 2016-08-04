@@ -1,3 +1,4 @@
+// Used only for testing.
 package main
 
 import (
