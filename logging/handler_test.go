@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"time"
 
-	. "github.infra.hana.ondemand.com/I061150/aker/logging"
-	"github.infra.hana.ondemand.com/I061150/aker/logging/fakes"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

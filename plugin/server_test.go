@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.infra.hana.ondemand.com/I061150/aker/logging"
-	. "github.infra.hana.ondemand.com/I061150/aker/plugin"
-	"github.infra.hana.ondemand.com/I061150/aker/plugin/pluginfakes"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin/pluginfakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -5,7 +5,7 @@ set -e
 mkdir -p $GOPATH/src
 
 echo "Moving project to GOPATH..."
-prefix_path=$GOPATH/src/github.infra.hana.ondemand.com/I061150
+prefix_path=$GOPATH/src/github.infra.hana.ondemand.com/cloudfoundry
 mkdir -p $prefix_path
 cp -r aker $prefix_path
 cd $prefix_path/aker

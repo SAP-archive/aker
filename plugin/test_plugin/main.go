@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.infra.hana.ondemand.com/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 )
 
 type configHandler []byte

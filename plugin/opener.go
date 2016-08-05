@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.infra.hana.ondemand.com/I061150/aker/socket"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/socket"
 )
 
 // Open opens the specified plugin using the DefaultOpener.

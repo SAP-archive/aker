@@ -4,7 +4,7 @@ package pluginfakes
 import (
 	"sync"
 
-	"github.infra.hana.ondemand.com/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 )
 
 type FakeHTTPServer struct {

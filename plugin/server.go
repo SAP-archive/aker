@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.infra.hana.ondemand.com/I061150/aker/logging"
-	"github.infra.hana.ondemand.com/I061150/aker/socket"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/socket"
 )
 
 //go:generate counterfeiter . Socket

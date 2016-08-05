@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"time"
 
-	. "github.infra.hana.ondemand.com/I061150/aker/plugin"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

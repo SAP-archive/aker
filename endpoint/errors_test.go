@@ -1,7 +1,7 @@
 package endpoint_test
 
 import (
-	. "github.infra.hana.ondemand.com/I061150/aker/endpoint"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

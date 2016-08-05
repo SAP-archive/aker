@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	. "github.infra.hana.ondemand.com/I061150/aker/socket"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/socket"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

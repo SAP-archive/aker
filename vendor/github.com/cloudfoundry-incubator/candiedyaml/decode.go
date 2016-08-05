@@ -572,7 +572,7 @@ func (d *Decoder) scalarInterface() interface{} {
 	return v
 }
 
-// sequenceInterface is like sequence but returns []interface{}.
+// arrayInterface is like array but returns []interface{}.
 func (d *Decoder) sequenceInterface() []interface{} {
 	var v = make([]interface{}, 0)
 
@@ -595,7 +595,7 @@ done:
 	return v
 }
 
-// mappingInterface is like mapping but returns map[interface{}]interface{}.
+// objectInterface is like object but returns map[string]interface{}.
 func (d *Decoder) mappingInterface() map[interface{}]interface{} {
 	m := make(map[interface{}]interface{})
 

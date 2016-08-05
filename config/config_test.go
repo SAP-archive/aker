@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	. "github.infra.hana.ondemand.com/I061150/aker/config"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

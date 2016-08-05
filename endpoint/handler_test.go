@@ -3,11 +3,11 @@ package endpoint_test
 import (
 	"errors"
 
-	"github.infra.hana.ondemand.com/I061150/aker/config"
-	. "github.infra.hana.ondemand.com/I061150/aker/endpoint"
-	"github.infra.hana.ondemand.com/I061150/aker/endpoint/endpointfakes"
-	"github.infra.hana.ondemand.com/I061150/aker/logging"
-	"github.infra.hana.ondemand.com/I061150/aker/plugin"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
+	. "github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint/endpointfakes"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
