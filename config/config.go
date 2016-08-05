@@ -3,9 +3,10 @@ package config
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -42,9 +43,12 @@ func LoadFromFile(name string) (Config, error) {
 }
 
 func loadFromReader(reader io.Reader) (Config, error) {
+	content, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return Config{}, err
+	}
 	config := Config{}
-	decoder := candiedyaml.NewDecoder(reader)
-	if err := decoder.Decode(&config); err != nil {
+	if err := yaml.Unmarshal(content, &config); err != nil {
 		return Config{}, err
 	}
 	return config, nil

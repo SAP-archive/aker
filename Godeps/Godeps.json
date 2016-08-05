@@ -7,10 +7,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/cloudfoundry-incubator/candiedyaml",
-			"Rev": "03dec5cff353c1022c095dd7681b3882cd441782"
-		},
-		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.2.0-55-g5437a97",
 			"Rev": "5437a97bf824dec14e58d68c56ee36e772670c2e"
