@@ -6,7 +6,6 @@ import (
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
 	. "github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint/endpointfakes"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 
 	. "github.com/onsi/ginkgo"
@@ -25,7 +24,6 @@ var _ = Describe("Handler", func() {
 	})
 
 	BeforeEach(func() {
-		logging.DefaultLogger = logging.NewNativeLogger(GinkgoWriter, GinkgoWriter)
 		opener = new(endpointfakes.FakePluginOpener)
 	})
 

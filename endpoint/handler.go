@@ -7,6 +7,7 @@ import (
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
 )
 
 //go:generate counterfeiter . PluginOpener
@@ -81,7 +82,7 @@ func (b *chainBuilder) buildPlugin(reference config.PluginReference, next *plugi
 		return nil, err
 	}
 
-	logging.Infof("Opening plugin: %q", reference.Name)
+	gologger.Infof("Opening plugin: %q", reference.Name)
 	plug, err := b.plugin.Open(reference.Name, cfgData, next)
 	if err != nil {
 		return nil, err

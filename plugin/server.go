@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/socket"
+	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
 )
 
 //go:generate counterfeiter . Socket
@@ -48,11 +48,11 @@ type Server struct {
 	config io.Reader
 	socket Socket
 	signal Notifier
-	log    logging.Logger
+	log    gologger.Logger
 }
 
 // NewServer returns a brand new server.
-func NewServer(config io.Reader, log logging.Logger, socket Socket, signal Notifier) *Server {
+func NewServer(config io.Reader, log gologger.Logger, socket Socket, signal Notifier) *Server {
 	return &Server{
 		config: config,
 		socket: socket,
@@ -85,10 +85,10 @@ func (n notifier) Notify(c chan<- os.Signal, sig ...os.Signal) {
 // server and reading this, you're doing something wrong.
 //
 // It uses os.Stdin for reading configuration.
-// It uses the logging.DefaultLogger to log.
+// It uses the gologger.DefaultLogger to log.
 // It uses the socket package for HTTP over unix domain sockets.
 // It uses the signal package from the standard library for signal handling.
-var DefaultServer = NewServer(os.Stdin, logging.DefaultLogger, socketProxy{}, notifier{})
+var DefaultServer = NewServer(os.Stdin, gologger.DefaultLogger, socketProxy{}, notifier{})
 
 // ListenAndServeHTTP starts the http.Handler returned by the factory as plugin.
 func (s *Server) ListenAndServeHTTP(factory HandlerFactory) error {

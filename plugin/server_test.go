@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
 	. "github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin/pluginfakes"
+	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,7 +22,6 @@ var _ = Describe("ListenAndServeHTTP", func() {
 
 	var fakeSocket *pluginfakes.FakeSocket
 	var fakeNotifier *pluginfakes.FakeNotifier
-	var testLogger logging.Logger
 
 	var server *Server
 	var err error
@@ -30,11 +29,10 @@ var _ = Describe("ListenAndServeHTTP", func() {
 	BeforeEach(func() {
 		fakeSocket = new(pluginfakes.FakeSocket)
 		fakeNotifier = new(pluginfakes.FakeNotifier)
-		testLogger = logging.NewNativeLogger(GinkgoWriter, GinkgoWriter)
 	})
 
 	JustBeforeEach(func() {
-		server = NewServer(bytes.NewBuffer(config), testLogger, fakeSocket, fakeNotifier)
+		server = NewServer(bytes.NewBuffer(config), gologger.DefaultLogger, fakeSocket, fakeNotifier)
 		err = server.ListenAndServeHTTP(factory)
 	})
 
