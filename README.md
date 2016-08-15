@@ -45,10 +45,10 @@ which aker
 You can run Aker as follows.
 
 ```bash
-aker --config <path_to_config_file>
+aker -config <path_to_config_file>
 ```
 
-:information_source: If you don't specify the `--config` flag, then Aker will look for a configuration file in `./config.yml`.
+:information_source: If you don't specify the `-config` flag, then Aker will look for a configuration file in `./config.yml`.
 
 Let's have a look at a minimal configuration.
 
@@ -82,7 +82,7 @@ endpoints:
           url: http://location.com
 ```
 
-The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin|https://github.infra.hana.ondemand.com/cloudfoundry/aker-proxy-plugin], which in turn will proxy calls to `http://example.org`.
+The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin](https://github.infra.hana.ondemand.com/cloudfoundry/aker-proxy-plugin), which in turn will proxy calls to `http://example.org`.
 
 :information_source: One needs to make sure that the `aker-proxy-plugin` plugin is available on the `PATH`, or one could configure the plugin `name` to point to the plugin executable.
 

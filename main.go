@@ -15,7 +15,7 @@ import (
 var configLocationFlag = flag.String(
 	"config",
 	"config.yml",
-	"Specifies the configuration file location. By default this is './config.yml'.",
+	"Specifies the configuration file location.",
 )
 
 func main() {
