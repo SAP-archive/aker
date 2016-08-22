@@ -22,7 +22,11 @@ func (p *Plugin) SocketPath() string {
 
 // Close releases all resources allocated by the plugin.
 func (p *Plugin) Close() error {
-	return p.process.Signal(os.Interrupt)
+	if err := p.process.Signal(os.Interrupt); err != nil {
+		return err
+	}
+	_, err := p.process.Wait()
+	return err
 }
 
 type setup struct {
