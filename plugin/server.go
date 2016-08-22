@@ -118,7 +118,7 @@ func (s *Server) ListenAndServeHTTP(factory HandlerFactory) error {
 	defer server.Stop()
 
 	c := make(chan os.Signal)
-	s.signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+	s.signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-c
 	s.log.Infof("Exiting due to: %v\n", sig)
