@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
 	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
@@ -34,9 +35,6 @@ func main() {
 		mux.Handle(endpointCfg.Path, endpointHandler)
 	}
 
-	gologger.Infof("Starting HTTP listener...")
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-
 	handler := NewHeaderSticker(mux, map[string]func() string{
 		"X-Aker-Request-Id": func() string {
 			uid, _ := uuid.Random()
@@ -44,7 +42,16 @@ func main() {
 		},
 	})
 
-	if err = http.ListenAndServe(addr, handler); err != nil {
+	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	srv := http.Server{
+		Addr:         addr,
+		Handler:      handler,
+		ReadTimeout:  time.Duration(cfg.Server.ReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second,
+	}
+
+	gologger.Infof("Starting HTTP listener...")
+	if err = srv.ListenAndServe(); err != nil {
 		gologger.Fatalf("HTTP Listener failed with %q", err.Error())
 	}
 }

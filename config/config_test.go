@@ -25,6 +25,8 @@ var _ = Describe("Config", func() {
 			It("should have proper server config section", func() {
 				Ω(config.Server.Host).Should(Equal("localhost"))
 				Ω(config.Server.Port).Should(Equal(8080))
+				Ω(config.Server.ReadTimeout).Should(Equal(5))
+				Ω(config.Server.WriteTimeout).Should(Equal(10))
 			})
 
 			It("should have proper endpoint section", func() {
