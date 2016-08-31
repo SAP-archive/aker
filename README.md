@@ -57,11 +57,13 @@ Let's have a look at a minimal configuration.
 server:
   host: 0.0.0.0
   port: 8080
+  read_timeout: 5
+  write_timeout: 10
 
 endpoints: []
 ```
 
-This configuration will start Aker and have it listen on the `8080` port for HTTP requests. It will not handle any of the requests, however, since we haven't configured any behavior.
+This configuration will start Aker and have it listen on the `8080` port for HTTP requests and will have the corresponding read and write timeouts for tcp connections. It will not handle any of the requests, however, since we haven't configured any behavior.
 
 :information_source: If you want Aker to listen only for local requests, you can change `host` from `0.0.0.0` to `127.0.0.1`.
 
@@ -72,6 +74,8 @@ Here is an extension to the above configuration that adds some meaningful behavi
 server:
   host: 0.0.0.0
   port: 8080
+  read_timeout: 5
+  write_timeout: 10
 
 endpoints:
   - path: "/"
