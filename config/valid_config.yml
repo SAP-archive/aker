@@ -1,6 +1,8 @@
 server:
   host: localhost
   port: 8080
+  read_timeout: 5
+  write_timeout: 10
 endpoints:
   - path: "/"
     plugins: []
