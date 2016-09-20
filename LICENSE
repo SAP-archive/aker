@@ -217,4 +217,30 @@ products or services (for example, SAP Enterprise Services, BAPIs, Idocs,
 RFCs and ABAP calls or other user exits) and may be made available through
 SAP or third party products, SDKs, documentation or other media.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SUBCOMPONENTS
+
+This project includes content from the following subcomponents that are
+subject to separate license terms. Your use of these subcomponents is subject
+to the separate license terms applicable to each subcomponent.
+
+Component: ginkgo
+Licensor: Onsi Fakhouri
+Website: https://github.com/onsi/ginkgo
+License: MIT License
+Additional Notices: Copyright (c) 2013-2014 Onsi Fakhouri
+
+Component: gomega
+Licensor: Onsi Fakhouri
+Website: https://github.com/onsi/gomega
+License: MIT License
+Additional Notices: Copyright (c) 2013-2014 Onsi Fakhouri
+
+Component: yaml.v2
+Licensor: Canonical Ltd.
+Website: https://github.com/go-yaml/yaml
+License: Apache License, Version 2.0
+Additional Notices: Copyright 2011-2016 Canonical Ltd.
+
 ------------------------------------------------------------------------------
