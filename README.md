@@ -5,6 +5,9 @@ Aker is an HTTP reverse proxy server that is designed to handle incoming request
 
 Plugins can be configured and attached to specific HTTP paths. By default, an HTTP `Not Found` status is returned for paths that don't have plugins configured.
 
+## License
+This project is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file.
+
 ## Getting Started
 
 Before setting up Aker, one should get familiar with the internal workings of the software.
