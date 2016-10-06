@@ -4,7 +4,7 @@ package loggingfakes
 import (
 	"sync"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	"github.com/SAP/aker/logging"
 )
 
 type FakeFormatter struct {

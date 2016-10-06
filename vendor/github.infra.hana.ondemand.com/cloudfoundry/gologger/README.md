@@ -5,7 +5,7 @@ Simple logging framework for Go
 Use the following command to download the framework.
 
 ```bash
-go get github.infra.hana.ondemand.com/cloudfoundry/gologger
+go get github.com/SAP/gologger
 ```
 
 Here is a simple demonstration how to use the framework.

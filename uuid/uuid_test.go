@@ -3,7 +3,7 @@ package uuid_test
 import (
 	"sync"
 
-	. "github.infra.hana.ondemand.com/cloudfoundry/aker/uuid"
+	. "github.com/SAP/aker/uuid"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

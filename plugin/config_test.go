@@ -1,7 +1,7 @@
 package plugin_test
 
 import (
-	. "github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	. "github.com/SAP/aker/plugin"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

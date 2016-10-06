@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	. "github.infra.hana.ondemand.com/cloudfoundry/aker/socket"
+	. "github.com/SAP/aker/socket"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

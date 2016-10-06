@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
+	"github.com/SAP/aker/logging"
 )
 
 type FakeResponseRecorder struct {

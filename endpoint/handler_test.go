@@ -3,10 +3,10 @@ package endpoint_test
 import (
 	"errors"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
-	. "github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint/endpointfakes"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	"github.com/SAP/aker/config"
+	. "github.com/SAP/aker/endpoint"
+	"github.com/SAP/aker/endpoint/endpointfakes"
+	"github.com/SAP/aker/plugin"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

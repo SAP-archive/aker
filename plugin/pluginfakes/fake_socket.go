@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	"github.com/SAP/aker/plugin"
 )
 
 type FakeSocket struct {
