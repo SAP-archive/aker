@@ -36,7 +36,7 @@ Plugins can use HTTP headers to forward information to subsequent plugins in the
 The application is written in Go so you will need to set that up. Once you have Go, you can use the following command to download the source code and build it.
 
 ```bash
-go get github.infra.hana.ondemand.com/cloudfoundry/aker
+go get github.com/SAP/aker
 ```
 
 To verify that Aker has been properly installed, use the following command.
@@ -89,7 +89,7 @@ endpoints:
           url: http://location.com
 ```
 
-The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin](https://github.infra.hana.ondemand.com/cloudfoundry/aker-proxy-plugin), which in turn will proxy calls to `http://example.org`.
+The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin](https://github.com/SAP/aker-proxy-plugin), which in turn will proxy calls to `http://example.org`.
 
 :information_source: One needs to make sure that the `aker-proxy-plugin` plugin is available on the `PATH`, or one could configure the plugin `name` to point to the plugin executable.
 
@@ -134,7 +134,7 @@ package main
 import (
   "net/http"
 
-  "github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+  "github.com/SAP/aker/plugin"
 )
 
 type MessageHandler struct {

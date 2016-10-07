@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
-	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
+	"github.com/SAP/aker/config"
+	"github.com/SAP/aker/logging"
+	"github.com/SAP/aker/plugin"
+	"github.com/SAP/gologger"
 )
 
 //go:generate counterfeiter . PluginOpener

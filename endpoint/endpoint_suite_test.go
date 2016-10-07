@@ -3,7 +3,7 @@ package endpoint_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
+	"github.com/SAP/gologger"
 
 	"testing"
 )

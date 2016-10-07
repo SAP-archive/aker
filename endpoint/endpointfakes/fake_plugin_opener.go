@@ -4,8 +4,8 @@ package endpointfakes
 import (
 	"sync"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
+	"github.com/SAP/aker/endpoint"
+	"github.com/SAP/aker/plugin"
 )
 
 type FakePluginOpener struct {

@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/config"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/endpoint"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/plugin"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/uuid"
-	"github.infra.hana.ondemand.com/cloudfoundry/gologger"
+	"github.com/SAP/aker/config"
+	"github.com/SAP/aker/endpoint"
+	"github.com/SAP/aker/plugin"
+	"github.com/SAP/aker/uuid"
+	"github.com/SAP/gologger"
 )
 
 var configLocationFlag = flag.String(

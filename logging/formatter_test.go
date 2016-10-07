@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	. "github.infra.hana.ondemand.com/cloudfoundry/aker/logging"
-	"github.infra.hana.ondemand.com/cloudfoundry/aker/logging/fakes"
+	. "github.com/SAP/aker/logging"
+	"github.com/SAP/aker/logging/fakes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
