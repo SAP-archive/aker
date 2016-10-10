@@ -194,3 +194,11 @@ If a plugin encounters problem with some request, it is advisable to dump the va
 The `X-Aker-Request-Id` header is also propagated to the end user, so should the user face a problem, they can provide the header value for tracing.
 
 If a plugin is part of a plugin chain, which means that each request gets processed by multiple plugins before it is returned to Aker and thus to the user, then the way of telling the requests not to continue further the plugin chain is to write something to the response by calling Write or WriteHeader of the `http.ResponseWriter`. This will stop the request from going through subsequent plugins and will return the response to the end user.
+
+## Tests
+
+`aker` project contains unit tests, in order to execute them run the following command in project root directory.
+
+```bash
+ginkgo -r
+```
