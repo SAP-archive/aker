@@ -1,3 +1,5 @@
+[![CLA assistant](https://cla-assistant.io/readme/badge/SAP/aker)](https://cla-assistant.io/SAP/aker)
+
 Aker
 ====
 
