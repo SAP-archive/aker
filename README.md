@@ -17,7 +17,7 @@ Before setting up Aker, one should get familiar with the internal workings of th
 Aker acts as an HTTP reverse proxy that routes incoming requests to sequences of plugins, depending on the request path.
 All of the plugin chains (sequences) and their path binding are modeled via the Aker configuration.
 
-![Overview](https://github.infra.hana.ondemand.com/raw/cloudfoundry/aker/master/documents/overview.png)
+![Overview](https://raw.githubusercontent.com/SAP/aker/master/documents/overview.png)
 
 Once a request is received by Aker, it checks the path of the request and determines the plugin chain that should handle it. Afterwards, it forwards the request to the first plugin in that chain.
 That plugin, external to the Aker process, has the chance to process and modify the incoming request. It can then write output to the response, at which point the processing stops and the request will not go further, or it can leave the request to be processed by subsequent plugins in the chain.
