@@ -10,24 +10,15 @@ import (
 	"github.com/SAP/gologger"
 )
 
-//go:generate counterfeiter . PluginOpener
-
-// Opener wraps the basic Open plugin method.
-type PluginOpener interface {
-	// Open should connect to and configure the specified plugin.
-	Open(name string, config []byte, next *plugin.Plugin) (*plugin.Plugin, error)
-}
-
 // Handler represents Aker endpoint.
 type Handler struct {
-	path        string
-	plugin      PluginOpener
-	pluginChain http.Handler
+	http.Handler
+	path string
 }
 
 // NewHandler creates new endpoint handler. It opens all plugins specified
-// by endpoint using the provided Opener.
-func NewHandler(endpoint config.Endpoint, opener PluginOpener) (*Handler, error) {
+// by endpoint.
+func NewHandler(endpoint config.Endpoint) (*Handler, error) {
 	if endpoint.Path == "" {
 		return nil, InvalidPathError("")
 	}
@@ -35,8 +26,7 @@ func NewHandler(endpoint config.Endpoint, opener PluginOpener) (*Handler, error)
 		return nil, NoPluginsErr
 	}
 
-	chainBuilder := chainBuilder{opener}
-	pluginChain, err := chainBuilder.build(endpoint.Plugins)
+	pluginChain, err := buildChain(endpoint.Plugins)
 	if err != nil {
 		return nil, err
 	}
@@ -46,29 +36,20 @@ func NewHandler(endpoint config.Endpoint, opener PluginOpener) (*Handler, error)
 	}
 
 	return &Handler{
-		path:        endpoint.Path,
-		pluginChain: pluginChain,
+		Handler: pluginChain,
+		path:    endpoint.Path,
 	}, nil
 }
 
-// ServeHTTP routes the incoming http.Request through the chain of aker plugins.
-func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	h.pluginChain.ServeHTTP(w, req)
-}
-
-type chainBuilder struct {
-	plugin PluginOpener
-}
-
-func (b *chainBuilder) build(references []config.PluginReference) (http.Handler, error) {
+func buildChain(references []config.PluginReference) (http.Handler, error) {
 	index := len(references) - 1
-	lastPlugin, err := b.buildPlugin(references[index], nil)
+	lastPlugin, err := buildPlugin(references[index], nil)
 	if err != nil {
 		return nil, err
 	}
 	for index > 0 {
 		index--
-		lastPlugin, err = b.buildPlugin(references[index], lastPlugin)
+		lastPlugin, err = buildPlugin(references[index], lastPlugin)
 		if err != nil {
 			return nil, err
 		}
@@ -76,14 +57,14 @@ func (b *chainBuilder) build(references []config.PluginReference) (http.Handler,
 	return lastPlugin, nil
 }
 
-func (b *chainBuilder) buildPlugin(reference config.PluginReference, next *plugin.Plugin) (*plugin.Plugin, error) {
+func buildPlugin(reference config.PluginReference, next *plugin.Plugin) (*plugin.Plugin, error) {
 	cfgData, err := plugin.MarshalConfig(reference.Config)
 	if err != nil {
 		return nil, err
 	}
 
 	gologger.Infof("Opening plugin: %q", reference.Name)
-	plug, err := b.plugin.Open(reference.Name, cfgData, next)
+	plug, err := plugin.Open(reference.Name, cfgData, next)
 	if err != nil {
 		return nil, err
 	}

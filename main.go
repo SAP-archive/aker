@@ -8,7 +8,6 @@ import (
 
 	"github.com/SAP/aker/config"
 	"github.com/SAP/aker/endpoint"
-	"github.com/SAP/aker/plugin"
 	"github.com/SAP/aker/uuid"
 	"github.com/SAP/gologger"
 )
@@ -28,7 +27,7 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	for _, endpointCfg := range cfg.Endpoints {
-		endpointHandler, err := endpoint.NewHandler(endpointCfg, plugin.DefaultOpener)
+		endpointHandler, err := endpoint.NewHandler(endpointCfg)
 		if err != nil {
 			gologger.Fatalf("Failed to build plugin chain due to %q", err.Error())
 		}

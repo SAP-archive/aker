@@ -15,7 +15,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the config file is valid", func() {
 			BeforeEach(func() {
-				config, err = LoadFromFile("valid_config.yml")
+				config, err = LoadFromFile("testdata/valid_config.yml")
 			})
 
 			It("should have not returned an error", func() {
@@ -52,7 +52,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the config file is invalid", func() {
 			BeforeEach(func() {
-				_, err = LoadFromFile("./invalid_config.yml")
+				_, err = LoadFromFile("testdata/invalid_config.yml")
 			})
 
 			It("should have returned an error", func() {
