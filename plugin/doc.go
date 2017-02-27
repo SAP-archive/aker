@@ -5,31 +5,31 @@ InitFunc type, which handles the initialization of plugins.
 Following is an example plugin implementation that returns configured
 response body and status code.
 
-package main
+	package main
 
-import (
-    "net/http"
+	import (
+		"net/http"
 
-    "github.com/SAP/aker/plugin"
-)
+		"github.com/SAP/aker/plugin"
+	)
 
-type MessageHandler struct {
-    Message []byte
-    Code    int
-}
+	type MessageHandler struct {
+		Message []byte
+		Code    int
+	}
 
-func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-    w.WriteHeader(h.Code)
-    w.Write(h.Message)
-}
+	func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(h.Code)
+		w.Write(h.Message)
+	}
 
-func Init(config []byte) (http.Handler, error) {
-    var handler = &MessageHandler{}
-    if err := plugin.UnmarshalConfig(data, &handler); err != nil {
-    	return nil, err
-    }
-    return handler, nil
-}
+	func Init(config []byte) (http.Handler, error) {
+		var handler = &MessageHandler{}
+		if err := plugin.UnmarshalConfig(data, &handler); err != nil {
+			return nil, err
+		}
+		return handler, nil
+	}
 
 Creating a plugin requires implementing and exporting an Init function, which
 basically is just a function that accepts a byte array as input parameter
@@ -42,17 +42,17 @@ of the data. The underlying notation is YAML, thus if you want to make use
 of Go's struct field tags, you should use 'yaml:<opts>' for configuring
 how the unmarshaller should handle the Go struct fields.
 
-func Init(data []byte) (http.Handler, error) {
-  	var myConfig struct{
-  		a int
-  		b string
-  	} cfg
+	func Init(data []byte) (http.Handler, error) {
+		var myConfig struct{
+			a int
+			b string
+		} cfg
 
-  	if err := plugin.UnmarshalConfig(data, &cfg); err != nil {
-  		return nil, err
-  	}
-  	return newMyHandler(cfg), nil
-}
+		if err := plugin.UnmarshalConfig(data, &cfg); err != nil {
+			return nil, err
+		}
+		return newMyHandler(cfg), nil
+	}
 
 The plugin is loaded in memory through Go's built-in plugin functionality.
 The plugin should be built using:
