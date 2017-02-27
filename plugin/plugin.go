@@ -35,14 +35,14 @@ func Open(path string, config []byte, next *Plugin) (*Plugin, error) {
 	if err != nil {
 		return nil, err
 	}
-	if init, ok := sym.(InitFunc); ok {
+	if init, ok := sym.(func([]byte) (http.Handler, error)); ok {
 		h, err := init(config)
 		if err != nil {
 			return nil, err
 		}
 		return &Plugin{h, next}, nil
 	}
-	return nil, errors.New("plugin: missing Initer symbol")
+	return nil, errors.New("plugin: Init symbol does not implement InitFunc")
 }
 
 type responseTracker struct {
