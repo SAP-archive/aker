@@ -9,6 +9,7 @@ import (
 
 const retryCount = 5
 const retryInterval = time.Second
+const flushInterval = 300 * time.Millisecond
 
 // ProxyHTTP proxies all requests to the specified socket path.
 func ProxyHTTP(socketPath string) http.Handler {
@@ -33,5 +34,6 @@ func ProxyHTTP(socketPath string) http.Handler {
 			},
 			ExpectContinueTimeout: 1 * time.Second,
 		},
+		FlushInterval: flushInterval,
 	}
 }
