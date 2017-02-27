@@ -56,7 +56,7 @@ how the unmarshaller should handle the Go struct fields.
 
 The plugin is loaded in memory through Go's built-in plugin functionality.
 The plugin should be built using:
-go build -buildmode=plugin
+	go build -buildmode=plugin
 So it is possible to load it as dynamic library. The main package of the
 plugin should export a Init sybmol, which has the plugin.InitFunc signature.
 
