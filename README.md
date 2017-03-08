@@ -88,10 +88,10 @@ endpoints:
     plugins:
       - name: aker-proxy-plugin
         configuration:
-          url: http://location.com
+          url: http://example.org
 ```
 
-The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin](https://github.com/SAP/aker-proxy-plugin), which in turn will proxy calls to `http://location.com`.
+The above configuration specifies that all incoming requests on path `/` should be forwarded to the [aker-proxy-plugin](https://github.com/SAP/aker-proxy-plugin), which in turn will proxy calls to `http://example.org`.
 
 :information_source: One needs to make sure that the `aker-proxy-plugin` plugin is available on the `PATH`, or one could configure the plugin `name` to point to the plugin executable.
 
