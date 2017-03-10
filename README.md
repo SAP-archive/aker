@@ -2,6 +2,7 @@ Aker
 ====
 [![CLA assistant](https://cla-assistant.io/readme/badge/SAP/aker)](https://cla-assistant.io/SAP/aker)
 [![GoDoc](https://godoc.org/github.com/SAP/aker?status.svg)](https://godoc.org/github.com/SAP/aker)
+[![Travis Build](https://travis-ci.org/SAP/aker.svg?branch=master)](https://travis-ci.org/SAP/aker)
 
 Aker is an HTTP reverse proxy server that is designed to handle incoming requests by forwarding them to a number of plugin handlers.
 
