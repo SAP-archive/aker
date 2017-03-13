@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - 1.8
+
+install:
+  - go get -t -v ./...
+  - go get github.com/onsi/ginkgo/ginkgo
+
+script: $GOPATH/bin/ginkgo -r --race --randomizeAllSpecs --randomizeSuites --skipMeasurements
